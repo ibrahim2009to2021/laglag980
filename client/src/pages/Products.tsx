@@ -443,8 +443,11 @@ export default function Products() {
                         <DialogHeader>
                           <DialogTitle>QR Code - {product.productName}</DialogTitle>
                         </DialogHeader>
-                        <div className="flex justify-center p-6">
-                          <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+                        <div className="text-center p-6">
+                          <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
+                          <p className="text-base font-medium text-foreground mt-4">
+                            {product.productName}
+                          </p>
                         </div>
                       </DialogContent>
                       </Dialog>
