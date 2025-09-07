@@ -197,11 +197,24 @@ export default function AddProduct() {
                     <FormItem>
                       <FormLabel>Product ID</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="F00XXX" 
-                          {...field}
-                          data-testid="input-product-id"
-                        />
+                        <div className="flex gap-2">
+                          <Input 
+                            placeholder="F00XXX" 
+                            {...field}
+                            data-testid="input-product-id"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              const randomId = `PROD-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+                              field.onChange(randomId);
+                            }}
+                            data-testid="button-generate-product-id"
+                          >
+                            Generate
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
