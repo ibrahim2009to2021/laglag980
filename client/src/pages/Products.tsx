@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import type { ProductsResponse, Product } from "@shared/schema";
 
 export default function Products() {
   const { toast } = useToast();
@@ -23,7 +24,7 @@ export default function Products() {
   });
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  const { data: productsData, isLoading, error } = useQuery({
+  const { data: productsData, isLoading, error } = useQuery<ProductsResponse>({
     queryKey: ["/api/products", { page, limit: 12, ...filters }],
   });
 

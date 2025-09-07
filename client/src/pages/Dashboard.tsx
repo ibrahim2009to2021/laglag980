@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { DashboardMetrics, ProductsResponse, ActivityLogsResponse } from "@shared/schema";
 
 export default function Dashboard() {
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
     queryKey: ["/api/dashboard/metrics"],
   });
 
-  const { data: recentProductsData, isLoading: productsLoading } = useQuery({
+  const { data: recentProductsData, isLoading: productsLoading } = useQuery<ProductsResponse>({
     queryKey: ["/api/products", { limit: 3 }],
   });
 
-  const { data: activityLogsData, isLoading: logsLoading } = useQuery({
+  const { data: activityLogsData, isLoading: logsLoading } = useQuery<ActivityLogsResponse>({
     queryKey: ["/api/activity-logs", { limit: 5 }],
   });
 

@@ -195,3 +195,26 @@ export type InsertInvoiceItem = z.infer<typeof insertInvoiceItemSchema>;
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type ActivityLog = typeof activityLogs.$inferSelect;
+
+// API Response Types
+export type DashboardMetrics = {
+  totalProducts: number;
+  lowStockItems: number;
+  pendingInvoices: number;
+  monthlyRevenue: number;
+};
+
+export type ProductsResponse = {
+  products: Product[];
+  total: number;
+};
+
+export type InvoicesResponse = {
+  invoices: Invoice[];
+  total: number;
+};
+
+export type ActivityLogsResponse = {
+  logs: (ActivityLog & { user: User | null })[];
+  total: number;
+};
