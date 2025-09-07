@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(214, 32%, 91%);
+  --background: hsl(0, 0%, 96.86%);
   --foreground: hsl(0, 0%, 0%);
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(222, 84%, 5%);
@@ -13,7 +13,7 @@
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(247.75, 96%, 49.02%);
   --secondary-foreground: hsl(0, 0%, 100%);
-  --muted: hsl(0, 1.19%, 50.39%);
+  --muted: hsl(0, 0%, 98.04%);
   --muted-foreground: hsl(0, 0%, 0%);
   --accent: hsl(155.15, 75.57%, 25.69%);
   --accent-foreground: hsl(0, 0%, 92.16%);
