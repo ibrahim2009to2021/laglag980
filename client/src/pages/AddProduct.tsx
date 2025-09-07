@@ -48,7 +48,7 @@ export default function AddProduct() {
   });
 
   const createProductMutation = useMutation({
-    mutationFn: async (data: AddProductForm & { imageUrl?: string }) => {
+    mutationFn: async (data: Omit<AddProductForm, 'price'> & { price: string; imageUrl?: string }) => {
       const response = await apiRequest("POST", "/api/products", data);
       return response.json();
     },
@@ -121,7 +121,7 @@ export default function AddProduct() {
         url: data.uploadURL,
       };
     } catch (error) {
-      if (isUnauthorizedError(error)) {
+      if (isUnauthorizedError(error as Error)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -151,6 +151,8 @@ export default function AddProduct() {
     try {
       const productData = {
         ...data,
+        price: data.price.toString(), // Convert price to string for decimal field
+        quantity: Math.floor(data.quantity), // Ensure quantity is integer
         imageUrl: uploadedImageUrl || undefined,
       };
 
