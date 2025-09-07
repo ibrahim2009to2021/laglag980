@@ -152,12 +152,10 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${products.quantity} > 5`);
     }
     
-    if (conditions.length > 1) {
-      query = query.where(and(...conditions));
-      countQuery = countQuery.where(and(...conditions));
-    } else if (conditions.length === 1) {
-      query = query.where(conditions[0]);
-      countQuery = countQuery.where(conditions[0]);
+    if (conditions.length > 0) {
+      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
+      query = query.where(whereCondition);
+      countQuery = countQuery.where(whereCondition);
     }
     
     const [productsResult, totalResult] = await Promise.all([
@@ -254,12 +252,10 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${invoices.createdAt} <= ${endDate}`);
     }
     
-    if (conditions.length > 1) {
-      query = query.where(and(...conditions));
-      countQuery = countQuery.where(and(...conditions));
-    } else if (conditions.length === 1) {
-      query = query.where(conditions[0]);
-      countQuery = countQuery.where(conditions[0]);
+    if (conditions.length > 0) {
+      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
+      query = query.where(whereCondition);
+      countQuery = countQuery.where(whereCondition);
     }
     
     const [invoicesResult, totalResult] = await Promise.all([
@@ -353,12 +349,10 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${activityLogs.createdAt} <= ${endDate}`);
     }
     
-    if (conditions.length > 1) {
-      query = query.where(and(...conditions));
-      countQuery = countQuery.where(and(...conditions));
-    } else if (conditions.length === 1) {
-      query = query.where(conditions[0]);
-      countQuery = countQuery.where(conditions[0]);
+    if (conditions.length > 0) {
+      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
+      query = query.where(whereCondition);
+      countQuery = countQuery.where(whereCondition);
     }
     
     const [logsResult, totalResult] = await Promise.all([
