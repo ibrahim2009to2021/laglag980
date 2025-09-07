@@ -454,13 +454,11 @@ export default function AddProduct() {
 
               {/* Image Upload */}
               <div className="bg-background/50 rounded-xl border p-6">
-                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-image text-primary text-sm"></i>
-                  </div>
-                  Product Image
-                  <span className="text-destructive text-lg">*</span>
-                </h4>
+                <div className="mb-4">
+                  <label className="text-lg font-medium text-foreground">
+                    Product Image <span className="text-red-500">*</span>
+                  </label>
+                </div>
                 <div className="space-y-4">
                   <ObjectUploader
                     maxNumberOfFiles={1}
@@ -469,44 +467,38 @@ export default function AddProduct() {
                     onComplete={handleUploadComplete}
                     buttonClassName="w-full"
                   >
-                    <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+                    <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer ${
                       uploadedImageUrl 
-                        ? 'border-green-300 bg-green-50 dark:bg-green-950/20' 
-                        : 'border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10'
+                        ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
+                        : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}>
                       {uploadedImageUrl ? (
-                        <div className="space-y-4">
-                          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full">
-                            <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
+                        <div className="space-y-3">
+                          <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
+                            <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
                           </div>
                           <div>
-                            <p className="text-lg font-semibold text-green-700 dark:text-green-300">Image uploaded successfully!</p>
-                            <p className="text-green-600 dark:text-green-400 mt-2">QR code will be generated after saving</p>
+                            <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
+                            <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
                           </div>
                         </div>
                       ) : (
-                        <div className="space-y-4">
-                          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full">
-                            <i className="fas fa-cloud-upload-alt text-primary text-2xl"></i>
-                          </div>
+                        <div className="space-y-3">
                           <div>
-                            <p className="text-lg font-semibold text-foreground">Click to upload product image</p>
-                            <p className="text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB</p>
-                            <p className="text-sm text-muted-foreground mt-1">High-quality images work best</p>
+                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+                              Click to upload product image
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                              PNG, JPG, GIF up to 10MB
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                              High-quality images work best
+                            </p>
                           </div>
                         </div>
                       )}
                     </div>
                   </ObjectUploader>
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <i className="fas fa-info-circle text-amber-600 dark:text-amber-400 mt-0.5"></i>
-                      <div>
-                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Required for QR Code Generation</p>
-                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">A unique QR code will be automatically generated after uploading the product image</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
