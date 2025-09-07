@@ -456,8 +456,11 @@ export default function AddProduct() {
               <div className="bg-background/50 rounded-xl border p-6">
                 <div className="mb-4">
                   <label className="text-lg font-medium text-foreground">
-                    Product Image <span className="text-red-500">*</span>
+                    Product Image <span className="text-red-500">*</span>: Click to upload product image
                   </label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    PNG, JPG, GIF up to 10MB • High-quality images work best
+                  </p>
                 </div>
                 <div className="space-y-4">
                   <ObjectUploader
@@ -483,18 +486,8 @@ export default function AddProduct() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                          <div className="text-center">
-                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                              Click to upload product image
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                              PNG, JPG, GIF up to 10MB
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                              High-quality images work best
-                            </p>
-                          </div>
+                        <div className="flex items-center justify-center">
+                          <i className="fas fa-cloud-upload-alt text-4xl text-muted-foreground"></i>
                         </div>
                       )}
                     </div>
