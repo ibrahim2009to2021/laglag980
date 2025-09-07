@@ -462,35 +462,37 @@ export default function AddProduct() {
                     PNG, JPG, GIF up to 10MB • High-quality images work best
                   </p>
                 </div>
-                <ObjectUploader
-                  maxNumberOfFiles={1}
-                  maxFileSize={10485760} // 10MB
-                  onGetUploadParameters={handleGetUploadParameters}
-                  onComplete={handleUploadComplete}
-                  buttonClassName="w-full h-full !bg-transparent !border-0 !shadow-none !p-0"
-                >
-                  <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer min-h-[120px] flex items-center justify-center w-full ${
-                    uploadedImageUrl 
-                      ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
-                      : 'bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                  }`}>
-                    {uploadedImageUrl ? (
-                      <div className="space-y-3">
-                        <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
-                          <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                <div className="flex justify-center">
+                  <ObjectUploader
+                    maxNumberOfFiles={1}
+                    maxFileSize={10485760} // 10MB
+                    onGetUploadParameters={handleGetUploadParameters}
+                    onComplete={handleUploadComplete}
+                    buttonClassName="!bg-transparent !border-0 !shadow-none !p-0"
+                  >
+                    <div className={`rounded-lg p-8 text-center transition-all duration-300 cursor-pointer min-h-[100px] flex items-center justify-center w-80 ${
+                      uploadedImageUrl 
+                        ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
+                        : 'bg-blue-500/20 dark:bg-blue-500/30 border-2 border-blue-500 hover:bg-blue-500/30 dark:hover:bg-blue-500/40'
+                    }`}>
+                      {uploadedImageUrl ? (
+                        <div className="space-y-3">
+                          <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
+                            <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                          </div>
+                          <div>
+                            <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
+                            <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
-                          <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <i className="fas fa-cloud-upload-alt text-4xl text-blue-600"></i>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <i className="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
-                      </div>
-                    )}
-                  </div>
-                </ObjectUploader>
+                      )}
+                    </div>
+                  </ObjectUploader>
+                </div>
               </div>
 
               {/* Form Actions */}
