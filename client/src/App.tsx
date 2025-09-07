@@ -19,6 +19,7 @@ function Router() {
         <>
           <Route path="/" component={() => <Layout page="dashboard" />} />
           <Route path="/products" component={() => <Layout page="products" />} />
+          <Route path="/products/:id" component={() => <Layout page="product-detail" />} />
           <Route path="/add-product" component={() => <Layout page="add-product" />} />
           <Route path="/bulk-upload" component={() => <Layout page="bulk-upload" />} />
           <Route path="/invoices" component={() => <Layout page="invoices" />} />
