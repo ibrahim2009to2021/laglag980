@@ -448,9 +448,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createActivityLog({
             userId: req.user.claims.sub,
             action: 'create',
-            entity: 'product',
-            entityId: product.id,
-            details: `Bulk uploaded product: ${product.productName}`,
+            module: 'product',
+            targetId: product.id,
+            targetName: product.productName,
+            details: { message: `Bulk uploaded product: ${product.productName}` },
           });
 
           successCount++;
