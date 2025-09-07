@@ -716,6 +716,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Can only email processed invoices" });
       }
       
+      if (!invoice.customerEmail) {
+        return res.status(400).json({ message: "Customer email is required to send invoice" });
+      }
+      
       const pdfBuffer = await generateInvoicePDF(invoice, invoice.items);
       
       const transporter = createEmailTransporter();

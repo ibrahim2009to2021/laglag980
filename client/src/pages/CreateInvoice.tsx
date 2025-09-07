@@ -124,7 +124,7 @@ export default function CreateInvoice() {
     };
 
     setInvoiceItems(prev => [...prev, newItem]);
-    setSelectedProducts(prev => new Set([...prev, product.id]));
+    setSelectedProducts(prev => new Set(Array.from(prev).concat([product.id])));
     setShowProductDialog(false);
   };
 
@@ -179,19 +179,19 @@ export default function CreateInvoice() {
 
     const invoiceData = {
       ...data,
-      subtotal,
-      discountPercentage: parseFloat(data.discountPercentage || "0") / 100,
-      discountAmount,
-      taxRate: parseFloat(data.taxRate || "8.5") / 100,
-      taxAmount,
-      total,
+      subtotal: subtotal.toFixed(2),
+      discountPercentage: (parseFloat(data.discountPercentage || "0") / 100).toFixed(4),
+      discountAmount: discountAmount.toFixed(2),
+      taxRate: (parseFloat(data.taxRate || "8.5") / 100).toFixed(4),
+      taxAmount: taxAmount.toFixed(2),
+      total: total.toFixed(2),
     };
 
     const itemsData = invoiceItems.map(item => ({
       productId: item.productId,
       quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      totalPrice: item.totalPrice,
+      unitPrice: item.unitPrice.toFixed(2),
+      totalPrice: item.totalPrice.toFixed(2),
     }));
 
     createInvoiceMutation.mutate({
@@ -311,9 +311,9 @@ export default function CreateInvoice() {
                         <DialogTitle>Select Products</DialogTitle>
                       </DialogHeader>
                       <div className="max-h-96 overflow-y-auto">
-                        {productsData?.products?.length ? (
+                        {(productsData as any)?.products?.length ? (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {productsData.products.map((product: any) => (
+                            {(productsData as any).products.map((product: any) => (
                               <Card 
                                 key={product.id} 
                                 className={`cursor-pointer transition-colors ${
