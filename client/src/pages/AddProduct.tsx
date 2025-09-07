@@ -148,12 +148,22 @@ export default function AddProduct() {
   };
 
   const onSubmit = async (data: AddProductForm) => {
+    // Ensure image is uploaded before submission
+    if (!uploadedImageUrl) {
+      toast({
+        title: "Image Required",
+        description: "Please upload a product image before saving",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const productData = {
         ...data,
         price: data.price.toString(), // Convert price to string for decimal field
         quantity: Math.floor(data.quantity), // Ensure quantity is integer
-        imageUrl: uploadedImageUrl || undefined,
+        imageUrl: uploadedImageUrl,
       };
 
       const product = await createProductMutation.mutateAsync(productData);
@@ -353,7 +363,7 @@ export default function AddProduct() {
 
               {/* Image Upload */}
               <div>
-                <Label className="text-sm font-medium">Product Image</Label>
+                <Label className="text-sm font-medium">Product Image <span className="text-destructive">*</span></Label>
                 <div className="mt-2">
                   <ObjectUploader
                     maxNumberOfFiles={1}
@@ -373,14 +383,14 @@ export default function AddProduct() {
                         <div className="space-y-2">
                           <i className="fas fa-cloud-upload-alt text-muted-foreground text-xl"></i>
                           <p className="text-sm text-foreground font-medium">Click to upload product image</p>
-                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB (Required)</p>
                         </div>
                       )}
                     </div>
                   </ObjectUploader>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  QR code will be generated automatically after image upload
+                  <span className="text-destructive">* Required:</span> QR code will be generated automatically after image upload
                 </p>
               </div>
 
@@ -396,7 +406,7 @@ export default function AddProduct() {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={createProductMutation.isPending}
+                  disabled={createProductMutation.isPending || !uploadedImageUrl}
                   data-testid="button-save-product"
                 >
                   <i className="fas fa-save mr-2"></i>
