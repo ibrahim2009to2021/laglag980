@@ -409,9 +409,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.updateProduct(productId, { imageUrl: normalizedPath });
       
-      // Generate QR code
+      // Generate QR code and store as image file
       const qrCodeData = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/products/${productId}`;
-      const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
+      const qrCodeBuffer = await QRCode.toBuffer(qrCodeData, {
+        type: 'png',
+        width: 300,
+        margin: 2,
+      });
+      
+      // Upload QR code to object storage
+      const qrCodeUrl = await uploadQRCodeToStorage(productId, qrCodeBuffer);
       const updatedProduct = await storage.updateProductQRCode(productId, qrCodeUrl);
       
       await logActivity(req, `Updated image for product "${updatedProduct.productName}"`, 'Products', productId, updatedProduct.productName);
