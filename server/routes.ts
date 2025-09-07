@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 productData.quantity = parseInt(value) || 0;
                 break;
               case 'Price':
-                productData.price = parseFloat(value) || 0;
+                productData.price = value; // Keep as string for decimal type
                 break;
               case 'Category':
                 productData.category = value || null;
@@ -415,8 +415,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
 
           // Validate required fields
-          if (!productData.productId || !productData.productName || !productData.color || !productData.size) {
+          if (!productData.productId || !productData.productName || !productData.color || !productData.size || !productData.price) {
             errors.push(`Row ${i}: Missing required fields`);
+            errorCount++;
+            continue;
+          }
+
+          // Validate price is a valid number
+          if (isNaN(parseFloat(productData.price))) {
+            errors.push(`Row ${i}: Invalid price value`);
             errorCount++;
             continue;
           }
