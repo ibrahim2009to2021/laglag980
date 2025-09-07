@@ -17,8 +17,8 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 
 const createInvoiceSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
-  customerEmail: z.string().email("Valid email is required"),
-  customerPhone: z.string().optional(),
+  customerEmail: z.string().email("Valid email format").optional().or(z.literal("")),
+  customerPhone: z.string().min(1, "Phone number is required"),
   customerAddress: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -233,7 +233,7 @@ export default function CreateInvoice() {
                     name="customerEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Email (Optional)</FormLabel>
                         <FormControl>
                           <Input 
                             type="email"
@@ -252,7 +252,7 @@ export default function CreateInvoice() {
                     name="customerPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone (Optional)</FormLabel>
+                        <FormLabel>Phone</FormLabel>
                         <FormControl>
                           <Input 
                             type="tel"
