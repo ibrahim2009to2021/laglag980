@@ -483,8 +483,8 @@ export default function AddProduct() {
                           </div>
                         </div>
                       ) : (
-                        <div className="space-y-3">
-                          <div>
+                        <div className="flex flex-col items-center justify-center space-y-3">
+                          <div className="text-center">
                             <p className="text-base font-medium text-gray-900 dark:text-gray-100">
                               Click to upload product image
                             </p>
