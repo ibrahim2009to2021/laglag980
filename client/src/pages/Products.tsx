@@ -343,7 +343,7 @@ export default function Products() {
                   {product.qrCodeUrl && (
                     <div className="absolute top-2 right-2">
                       {/* Click Here Indicator */}
-                      <div className="absolute -top-4 -right-4 z-10">
+                      <div className="absolute -top-6 -left-8 z-10">
                         <img 
                           src={clickHereImage} 
                           alt="Click here to view QR code"
