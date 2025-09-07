@@ -176,6 +176,7 @@ export default function Products() {
         'Price',
         'Category',
         'Description',
+        'QR Code URL',
         'Created Date'
       ];
 
@@ -191,6 +192,7 @@ export default function Products() {
           product.price,
           `"${product.category || ''}"`,
           `"${product.description || ''}"`,
+          `"${product.qrCodeUrl || ''}"`,
           `"${new Date(product.createdAt || '').toLocaleDateString()}"`
         ].join(','))
       ];
