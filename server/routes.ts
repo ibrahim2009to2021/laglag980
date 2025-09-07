@@ -659,6 +659,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/invoices/:id/status", isAuthenticated, async (req: any, res) => {
     try {
+      console.log('=== Invoice Status Update Request ===');
+      console.log('Invoice ID:', req.params.id);
+      console.log('New Status:', req.body.status);
+      
       const { status } = req.body;
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -668,7 +672,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Insufficient permissions to process invoices" });
       }
       
+      console.log('About to call updateInvoiceStatus...');
       const invoice = await storage.updateInvoiceStatus(req.params.id, status, userId);
+      console.log('updateInvoiceStatus completed');
       
       await logActivity(req, `Updated invoice ${invoice.invoiceNumber} status to ${status}`, 'Invoices', invoice.id, invoice.invoiceNumber);
       
