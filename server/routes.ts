@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertActivityLogSchema } from "@shared/schema";
 import { z } from "zod";
@@ -10,6 +10,58 @@ import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
+
+// QR Code upload function
+const uploadQRCodeToStorage = async (productId: string, qrCodeBuffer: Buffer): Promise<string> => {
+  try {
+    const publicSearchPaths = process.env.PUBLIC_OBJECT_SEARCH_PATHS?.split(',') || [];
+    if (publicSearchPaths.length === 0) {
+      throw new Error("PUBLIC_OBJECT_SEARCH_PATHS not configured");
+    }
+    
+    // Use the first public path for QR codes
+    const publicPath = publicSearchPaths[0].trim();
+    const { bucketName, objectName: basePath } = parseObjectPath(publicPath);
+    
+    const qrCodeFileName = `qr-codes/${productId}.png`;
+    const fullObjectPath = basePath ? `${basePath}/${qrCodeFileName}` : qrCodeFileName;
+    
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(fullObjectPath);
+    
+    // Upload the QR code buffer
+    await file.save(qrCodeBuffer, {
+      metadata: {
+        contentType: 'image/png',
+        cacheControl: 'public, max-age=3600',
+      },
+    });
+    
+    // Return the public URL
+    return `/public-objects/${qrCodeFileName}`;
+  } catch (error) {
+    console.error("Error uploading QR code to storage:", error);
+    throw error;
+  }
+};
+
+const parseObjectPath = (path: string): { bucketName: string; objectName: string } => {
+  if (!path.startsWith("/")) {
+    path = `/${path}`;
+  }
+  const pathParts = path.split("/");
+  if (pathParts.length < 2) {
+    throw new Error("Invalid path: must contain at least a bucket name");
+  }
+
+  const bucketName = pathParts[1];
+  const objectName = pathParts.slice(2).join("/");
+
+  return {
+    bucketName,
+    objectName,
+  };
+};
 
 // Email configuration
 const createEmailTransporter = () => {
@@ -230,10 +282,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const product = await storage.createProduct(validatedProduct);
       
-      // Generate QR code for all products
+      // Generate QR code for all products and store as image file
       try {
         const qrCodeData = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/products/${product.id}`;
-        const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
+        const qrCodeBuffer = await QRCode.toBuffer(qrCodeData, {
+          type: 'png',
+          width: 300,
+          margin: 2,
+        });
+        
+        // Upload QR code to object storage
+        const qrCodeUrl = await uploadQRCodeToStorage(product.id, qrCodeBuffer);
         await storage.updateProductQRCode(product.id, qrCodeUrl);
       } catch (qrError) {
         console.error("Error generating QR code:", qrError);
