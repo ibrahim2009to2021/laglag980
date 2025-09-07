@@ -181,27 +181,44 @@ export default function AddProduct() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-6">Add New Product</h3>
+    <div className="max-w-4xl mx-auto">
+      <Card className="shadow-xl border-0 bg-gradient-to-br from-background to-muted/20">
+        <CardContent className="p-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
+              <i className="fas fa-plus text-primary text-2xl"></i>
+            </div>
+            <h3 className="text-3xl font-bold text-foreground mb-2">Add New Product</h3>
+            <p className="text-muted-foreground text-lg">Create a new product for your fashion inventory</p>
+          </div>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Product Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-background/50 rounded-xl border p-6">
+                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-tag text-primary text-sm"></i>
+                  </div>
+                  Basic Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="productId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product ID</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-barcode text-muted-foreground"></i>
+                        Product ID
+                      </FormLabel>
                       <FormControl>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           <Input 
                             placeholder="F00XXX" 
                             {...field}
                             data-testid="input-product-id"
+                            className="flex-1 h-12 text-base"
                           />
                           <Button
                             type="button"
@@ -211,7 +228,9 @@ export default function AddProduct() {
                               field.onChange(randomId);
                             }}
                             data-testid="button-generate-product-id"
+                            className="h-12 px-6 bg-primary/5 hover:bg-primary/10 border-primary/20"
                           >
+                            <i className="fas fa-dice mr-2"></i>
                             Generate
                           </Button>
                         </div>
@@ -226,12 +245,16 @@ export default function AddProduct() {
                   name="productName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Name</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-tshirt text-muted-foreground"></i>
+                        Product Name
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Enter product name" 
                           {...field}
                           data-testid="input-product-name"
+                          className="h-12 text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -239,19 +262,32 @@ export default function AddProduct() {
                   )}
                 />
               </div>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Product Details */}
+              <div className="bg-background/50 rounded-xl border p-6">
+                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-palette text-primary text-sm"></i>
+                  </div>
+                  Product Details
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="color"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Color</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-palette text-muted-foreground"></i>
+                        Color
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="e.g., Navy Blue" 
                           {...field}
                           data-testid="input-color"
+                          className="h-12 text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -264,10 +300,13 @@ export default function AddProduct() {
                   name="size"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Size</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-ruler text-muted-foreground"></i>
+                        Size
+                      </FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-size">
+                          <SelectTrigger data-testid="select-size" className="h-12 text-base">
                             <SelectValue placeholder="Select size" />
                           </SelectTrigger>
                         </FormControl>
@@ -290,7 +329,10 @@ export default function AddProduct() {
                   name="quantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Quantity</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-boxes text-muted-foreground"></i>
+                        Quantity
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -299,6 +341,7 @@ export default function AddProduct() {
                           {...field}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           data-testid="input-quantity"
+                          className="h-12 text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -306,24 +349,42 @@ export default function AddProduct() {
                   )}
                 />
               </div>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pricing & Category */}
+              <div className="bg-background/50 rounded-xl border p-6">
+                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-dollar-sign text-primary text-sm"></i>
+                  </div>
+                  Pricing & Category
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-dollar-sign text-muted-foreground"></i>
+                        Price ($)
+                      </FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01"
-                          placeholder="0.00" 
-                          min="0"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          data-testid="input-price"
-                        />
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="0.00" 
+                            min="0"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            data-testid="input-price"
+                            className="h-12 text-base pl-8"
+                          />
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <span className="text-muted-foreground text-base">$</span>
+                          </div>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -335,10 +396,13 @@ export default function AddProduct() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category (Optional)</FormLabel>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-tags text-muted-foreground"></i>
+                        Category (Optional)
+                      </FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-category">
+                          <SelectTrigger data-testid="select-category" className="h-12 text-base">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                         </FormControl>
@@ -355,29 +419,49 @@ export default function AddProduct() {
                   )}
                 />
               </div>
+              </div>
 
-              <FormField
+              {/* Description */}
+              <div className="bg-background/50 rounded-xl border p-6">
+                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-align-left text-primary text-sm"></i>
+                  </div>
+                  Description
+                </h4>
+                <FormField
                 control={form.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel className="text-base font-medium flex items-center gap-2">
+                      <i className="fas fa-file-text text-muted-foreground"></i>
+                      Description (Optional)
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="Product description..." 
                         {...field}
                         data-testid="input-description"
+                        className="h-12 text-base"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              </div>
 
               {/* Image Upload */}
-              <div>
-                <Label className="text-sm font-medium">Product Image <span className="text-destructive">*</span></Label>
-                <div className="mt-2">
+              <div className="bg-background/50 rounded-xl border p-6">
+                <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-image text-primary text-sm"></i>
+                  </div>
+                  Product Image
+                  <span className="text-destructive text-lg">*</span>
+                </h4>
+                <div className="space-y-4">
                   <ObjectUploader
                     maxNumberOfFiles={1}
                     maxFileSize={10485760} // 10MB
@@ -385,45 +469,76 @@ export default function AddProduct() {
                     onComplete={handleUploadComplete}
                     buttonClassName="w-full"
                   >
-                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                    <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+                      uploadedImageUrl 
+                        ? 'border-green-300 bg-green-50 dark:bg-green-950/20' 
+                        : 'border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10'
+                    }`}>
                       {uploadedImageUrl ? (
-                        <div className="space-y-2">
-                          <i className="fas fa-check-circle text-accent text-xl"></i>
-                          <p className="text-sm text-foreground font-medium">Image uploaded successfully</p>
-                          <p className="text-xs text-muted-foreground">QR code will be generated after saving</p>
+                        <div className="space-y-4">
+                          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full">
+                            <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
+                          </div>
+                          <div>
+                            <p className="text-lg font-semibold text-green-700 dark:text-green-300">Image uploaded successfully!</p>
+                            <p className="text-green-600 dark:text-green-400 mt-2">QR code will be generated after saving</p>
+                          </div>
                         </div>
                       ) : (
-                        <div className="space-y-2">
-                          <i className="fas fa-cloud-upload-alt text-muted-foreground text-xl"></i>
-                          <p className="text-sm text-foreground font-medium">Click to upload product image</p>
-                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB (Required)</p>
+                        <div className="space-y-4">
+                          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full">
+                            <i className="fas fa-cloud-upload-alt text-primary text-2xl"></i>
+                          </div>
+                          <div>
+                            <p className="text-lg font-semibold text-foreground">Click to upload product image</p>
+                            <p className="text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB</p>
+                            <p className="text-sm text-muted-foreground mt-1">High-quality images work best</p>
+                          </div>
                         </div>
                       )}
                     </div>
                   </ObjectUploader>
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <i className="fas fa-info-circle text-amber-600 dark:text-amber-400 mt-0.5"></i>
+                      <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Required for QR Code Generation</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">A unique QR code will be automatically generated after uploading the product image</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  <span className="text-destructive">* Required:</span> QR code will be generated automatically after image upload
-                </p>
               </div>
 
               {/* Form Actions */}
-              <div className="flex items-center justify-end space-x-4">
+              <div className="flex items-center justify-center gap-6 pt-4">
                 <Button 
                   type="button" 
                   variant="outline"
                   onClick={() => navigate("/products")}
                   data-testid="button-cancel"
+                  className="h-12 px-8 text-base border-2 hover:bg-muted/50"
                 >
+                  <i className="fas fa-times mr-2"></i>
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={createProductMutation.isPending || !uploadedImageUrl}
                   data-testid="button-save-product"
+                  className="h-12 px-8 text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
                 >
-                  <i className="fas fa-save mr-2"></i>
-                  {createProductMutation.isPending ? "Saving..." : "Save Product"}
+                  {createProductMutation.isPending ? (
+                    <>
+                      <i className="fas fa-spinner animate-spin mr-2"></i>
+                      Saving Product...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-save mr-2"></i>
+                      Save Product
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
