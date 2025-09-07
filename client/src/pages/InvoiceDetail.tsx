@@ -8,13 +8,14 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
+import { type Invoice, type InvoiceItem, type Product } from "@shared/schema";
 
 export default function InvoiceDetail() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { id } = useParams();
 
-  const { data: invoice, isLoading, error } = useQuery({
+  const { data: invoice, isLoading, error } = useQuery<Invoice & { items: (InvoiceItem & { product: Product })[] }>({
     queryKey: [`/api/invoices/${id}`],
     enabled: !!id,
   });
