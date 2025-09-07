@@ -37,6 +37,7 @@ interface InvoiceItem {
     productName: string;
     size: string;
     price: string;
+    quantity: number;
   };
 }
 
@@ -109,6 +110,15 @@ export default function CreateInvoice() {
       return;
     }
 
+    if (product.quantity <= 0) {
+      toast({
+        title: "Out of Stock",
+        description: `${product.productName} is out of stock and cannot be added to the invoice.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const unitPrice = parseFloat(product.price);
     const newItem: InvoiceItem = {
       productId: product.id,
@@ -120,6 +130,7 @@ export default function CreateInvoice() {
         productName: product.productName,
         size: product.size,
         price: product.price,
+        quantity: product.quantity,
       },
     };
 
@@ -130,6 +141,18 @@ export default function CreateInvoice() {
 
   const updateQuantity = (index: number, quantity: number) => {
     if (quantity < 1) return;
+    
+    const item = invoiceItems[index];
+    const availableStock = item.product.quantity;
+    
+    if (quantity > availableStock) {
+      toast({
+        title: "Insufficient Stock",
+        description: `Only ${availableStock} units of ${item.product.productName} are available in stock. Cannot add ${quantity} units.`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     setInvoiceItems(prev => prev.map((item, i) => {
       if (i === index) {
