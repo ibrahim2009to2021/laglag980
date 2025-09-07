@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -22,7 +27,70 @@ export default function Products() {
     size: "",
     stockLevel: ""
   });
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const editProductSchema = z.object({
+    productName: z.string().min(1, "Product name is required"),
+    color: z.string().min(1, "Color is required"),
+    size: z.string().min(1, "Size is required"),
+    quantity: z.number().min(0, "Quantity must be 0 or greater"),
+    price: z.number().min(0, "Price must be 0 or greater"),
+    category: z.string().optional(),
+    description: z.string().optional(),
+  });
+
+  type EditProductForm = z.infer<typeof editProductSchema>;
+
+  const editForm = useForm<EditProductForm>({
+    resolver: zodResolver(editProductSchema),
+    defaultValues: {
+      productName: "",
+      color: "",
+      size: "",
+      quantity: 0,
+      price: 0,
+      category: "",
+      description: "",
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async (data: EditProductForm & { id: string }) => {
+      const response = await apiRequest("PUT", `/api/products/${data.id}`, {
+        ...data,
+        price: data.price.toString(),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      setSelectedProduct(null);
+      editForm.reset();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: productsData, isLoading, error } = useQuery<ProductsResponse>({
     queryKey: ["/api/products", { page, limit: 12, ...filters }],
@@ -235,15 +303,201 @@ export default function Products() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => setSelectedProduct(product)}
-                      data-testid={`button-edit-${product.id}`}
-                    >
-                      Edit
-                    </Button>
+                    <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => {
+                      if (!open) {
+                        setSelectedProduct(null);
+                        editForm.reset();
+                      }
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            editForm.reset({
+                              productName: product.productName,
+                              color: product.color,
+                              size: product.size,
+                              quantity: Number(product.quantity),
+                              price: Number(product.price),
+                              category: product.category || "",
+                              description: product.description || "",
+                            });
+                          }}
+                          data-testid={`button-edit-${product.id}`}
+                        >
+                          Edit
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Edit Product - {product.productName}</DialogTitle>
+                        </DialogHeader>
+                        <Form {...editForm}>
+                          <form onSubmit={editForm.handleSubmit((data) => updateProductMutation.mutate({ ...data, id: product.id }))} className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                              <FormField
+                                control={editForm.control}
+                                name="productName"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Product Name</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <FormField
+                                  control={editForm.control}
+                                  name="color"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Color</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={editForm.control}
+                                  name="size"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Size</FormLabel>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="XS">XS</SelectItem>
+                                          <SelectItem value="S">S</SelectItem>
+                                          <SelectItem value="M">M</SelectItem>
+                                          <SelectItem value="L">L</SelectItem>
+                                          <SelectItem value="XL">XL</SelectItem>
+                                          <SelectItem value="XXL">XXL</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <FormField
+                                  control={editForm.control}
+                                  name="quantity"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Quantity</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          min="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={editForm.control}
+                                  name="price"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Price ($)</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          step="0.01"
+                                          min="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <FormField
+                                control={editForm.control}
+                                name="category"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select category" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        <SelectItem value="">No Category</SelectItem>
+                                        <SelectItem value="Dresses">Dresses</SelectItem>
+                                        <SelectItem value="Tops">Tops</SelectItem>
+                                        <SelectItem value="Bottoms">Bottoms</SelectItem>
+                                        <SelectItem value="Shoes">Shoes</SelectItem>
+                                        <SelectItem value="Accessories">Accessories</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={editForm.control}
+                                name="description"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Product description..." />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="flex items-center justify-end space-x-2 pt-4">
+                              <Button 
+                                type="button" 
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedProduct(null);
+                                  editForm.reset();
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                type="submit" 
+                                disabled={updateProductMutation.isPending}
+                              >
+                                {updateProductMutation.isPending ? "Saving..." : "Save Changes"}
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
                     <Button
                       variant="outline"
                       size="sm"

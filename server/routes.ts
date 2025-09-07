@@ -13,7 +13,7 @@ import PDFDocument from "pdfkit";
 
 // Email configuration
 const createEmailTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER || process.env.GMAIL_USER || 'default@gmail.com',
