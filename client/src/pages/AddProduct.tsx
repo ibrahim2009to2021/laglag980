@@ -462,37 +462,35 @@ export default function AddProduct() {
                     PNG, JPG, GIF up to 10MB • High-quality images work best
                   </p>
                 </div>
-                <div className="space-y-4">
-                  <ObjectUploader
-                    maxNumberOfFiles={1}
-                    maxFileSize={10485760} // 10MB
-                    onGetUploadParameters={handleGetUploadParameters}
-                    onComplete={handleUploadComplete}
-                    buttonClassName="w-full"
-                  >
-                    <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer ${
-                      uploadedImageUrl 
-                        ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
-                        : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    }`}>
-                      {uploadedImageUrl ? (
-                        <div className="space-y-3">
-                          <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
-                            <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
-                          </div>
-                          <div>
-                            <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
-                            <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
-                          </div>
+                <ObjectUploader
+                  maxNumberOfFiles={1}
+                  maxFileSize={10485760} // 10MB
+                  onGetUploadParameters={handleGetUploadParameters}
+                  onComplete={handleUploadComplete}
+                  buttonClassName="w-full h-full"
+                >
+                  <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer min-h-[120px] flex items-center justify-center ${
+                    uploadedImageUrl 
+                      ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
+                      : 'bg-blue-50/50 dark:bg-blue-950/20 border-2 border-blue-300/50 hover:bg-blue-100/50 dark:hover:bg-blue-900/30'
+                  }`}>
+                    {uploadedImageUrl ? (
+                      <div className="space-y-3">
+                        <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
+                          <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
                         </div>
-                      ) : (
-                        <div className="flex items-center justify-center">
-                          <i className="fas fa-cloud-upload-alt text-4xl text-muted-foreground"></i>
+                        <div>
+                          <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
+                          <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
                         </div>
-                      )}
-                    </div>
-                  </ObjectUploader>
-                </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <i className="fas fa-cloud-upload-alt text-4xl text-blue-400"></i>
+                      </div>
+                    )}
+                  </div>
+                </ObjectUploader>
               </div>
 
               {/* Form Actions */}
