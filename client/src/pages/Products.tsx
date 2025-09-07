@@ -271,7 +271,9 @@ export default function Products() {
                           className="absolute top-2 right-2 bg-background/80 hover:bg-background"
                           data-testid={`button-qr-${product.id}`}
                         >
-                          <i className="fas fa-qrcode w-4 h-4"></i>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 11H5V13H3V11M11 5H13V9H11V5M9 11H13V15H9V11M15 3H21V9H15V3M17 5H19V7H17V5M15 15H17V17H15V15M17 17H19V19H17V17M19 19H21V21H19V19M3 3H9V9H3V3M5 5H7V7H5V5M3 15H9V21H3V15M5 17H7V19H5V17Z"/>
+                          </svg>
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-md">
