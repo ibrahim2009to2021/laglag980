@@ -63,6 +63,11 @@ export default function InvoiceDetail() {
       a.download = `invoice-${invoiceNumber}.pdf`;
       a.click();
       window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Success",
+        description: "PDF saved successfully",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -70,6 +75,20 @@ export default function InvoiceDetail() {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePrint = () => {
+    // Hide action buttons and other non-printable elements
+    const actionButtons = document.querySelectorAll('[data-print-hide]');
+    actionButtons.forEach(el => (el as HTMLElement).style.display = 'none');
+    
+    // Print the page
+    window.print();
+    
+    // Restore hidden elements after print
+    setTimeout(() => {
+      actionButtons.forEach(el => (el as HTMLElement).style.display = '');
+    }, 100);
   };
 
   const formatDate = (dateString: string) => {
@@ -146,7 +165,7 @@ export default function InvoiceDetail() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link href="/invoices">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" data-print-hide>
               <i className="fas fa-arrow-left w-4 h-4"></i>
             </Button>
           </Link>
@@ -159,8 +178,24 @@ export default function InvoiceDetail() {
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2" data-print-hide>
           {getStatusBadge(invoice.status)}
+          <Button
+            variant="outline"
+            onClick={handlePrint}
+            data-testid="button-print"
+          >
+            <i className="fas fa-print w-4 h-4 mr-2"></i>
+            Print
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => downloadPDF(invoice.id, invoice.invoiceNumber)}
+            data-testid="button-save-pdf"
+          >
+            <i className="fas fa-file-pdf w-4 h-4 mr-2"></i>
+            Save as PDF
+          </Button>
           {invoice.status === 'Pending' && canProcessInvoice() && (
             <Button
               onClick={() => updateStatusMutation.mutate('Processed')}
@@ -170,16 +205,6 @@ export default function InvoiceDetail() {
             >
               <i className="fas fa-check w-4 h-4 mr-2"></i>
               {updateStatusMutation.isPending ? "Processing..." : "Mark as Processed"}
-            </Button>
-          )}
-          {invoice.status === 'Processed' && (
-            <Button
-              variant="outline"
-              onClick={() => downloadPDF(invoice.id, invoice.invoiceNumber)}
-              data-testid="button-download-pdf"
-            >
-              <i className="fas fa-download w-4 h-4 mr-2"></i>
-              Download PDF
             </Button>
           )}
         </div>
