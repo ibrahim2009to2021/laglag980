@@ -175,12 +175,12 @@ export default function InvoiceDetail() {
               Invoice {invoice.invoiceNumber}
             </h1>
             <p className="text-muted-foreground">
-              Created on {formatDate(invoice.createdAt)}
+              Created on {invoice.createdAt ? formatDate(invoice.createdAt) : 'Unknown date'}
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-2" data-print-hide>
-          {getStatusBadge(invoice.status)}
+          {getStatusBadge(invoice.status || 'Unknown')}
           <Button
             variant="outline"
             onClick={handlePrint}
@@ -287,25 +287,25 @@ export default function InvoiceDetail() {
           <div className="max-w-md ml-auto space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium text-foreground">{formatCurrency(invoice.subtotal)}</span>
+              <span className="font-medium text-foreground">{formatCurrency(invoice.subtotal || 0)}</span>
             </div>
             {parseFloat(invoice.discountAmount || "0") > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
                   Discount ({(parseFloat(invoice.discountPercentage || "0") * 100).toFixed(1)}%):
                 </span>
-                <span className="font-medium text-foreground">-{formatCurrency(invoice.discountAmount)}</span>
+                <span className="font-medium text-foreground">-{formatCurrency(invoice.discountAmount || 0)}</span>
               </div>
             )}
             <div className="flex justify-between">
               <span className="text-muted-foreground">
                 Tax ({(parseFloat(invoice.taxRate || "0") * 100).toFixed(1)}%):
               </span>
-              <span className="font-medium text-foreground">{formatCurrency(invoice.taxAmount)}</span>
+              <span className="font-medium text-foreground">{formatCurrency(invoice.taxAmount || 0)}</span>
             </div>
             <div className="flex justify-between text-lg font-bold text-foreground border-t border-border pt-3">
               <span>Total:</span>
-              <span>{formatCurrency(invoice.total)}</span>
+              <span>{formatCurrency(invoice.total || 0)}</span>
             </div>
           </div>
           
