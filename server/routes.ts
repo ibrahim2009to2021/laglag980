@@ -659,10 +659,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/invoices/:id/status", isAuthenticated, async (req: any, res) => {
     try {
-      console.log('=== Invoice Status Update Request ===');
-      console.log('Invoice ID:', req.params.id);
-      console.log('New Status:', req.body.status);
-      
       const { status } = req.body;
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -672,9 +668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Insufficient permissions to process invoices" });
       }
       
-      console.log('About to call updateInvoiceStatus...');
       const invoice = await storage.updateInvoiceStatus(req.params.id, status, userId);
-      console.log('updateInvoiceStatus completed');
       
       await logActivity(req, `Updated invoice ${invoice.invoiceNumber} status to ${status}`, 'Invoices', invoice.id, invoice.invoiceNumber);
       
@@ -846,6 +840,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating user status:", error);
       res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  app.post("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const currentUser = await storage.getUser(userId);
+      
+      if (currentUser?.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { email, firstName, lastName, role } = req.body;
+      const user = await storage.upsertUser({
+        id: email, // Use email as ID for manual user creation
+        email,
+        firstName,
+        lastName,
+        role: role || 'Viewer',
+        isActive: true
+      });
+      
+      await logActivity(req, `Created user account for ${email}`, 'Users', user.id, email);
+      
+      res.status(201).json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
     }
   });
 

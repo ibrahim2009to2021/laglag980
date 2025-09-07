@@ -286,30 +286,21 @@ export class DatabaseStorage implements IStorage {
       
       // If processing the invoice, deduct inventory quantities
       if (status === 'Processed') {
-        console.log('Processing invoice - deducting inventory for invoice:', id);
-        
         // Get invoice items
         const items = await tx
           .select()
           .from(invoiceItems)
           .where(eq(invoiceItems.invoiceId, id));
         
-        console.log('Found invoice items:', items.length);
-        
         // Deduct inventory for each item
         for (const item of items) {
-          console.log(`Deducting ${item.quantity} from product ${item.productId}`);
-          
           // Get current product quantity first
           const [currentProduct] = await tx
             .select({ quantity: products.quantity })
             .from(products)
             .where(eq(products.id, item.productId));
           
-          console.log(`Current quantity: ${currentProduct?.quantity}, deducting: ${item.quantity}`);
-          
           const newQuantity = (currentProduct?.quantity || 0) - item.quantity;
-          console.log(`New quantity will be: ${newQuantity}`);
           
           await tx
             .update(products)

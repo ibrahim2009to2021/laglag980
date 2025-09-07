@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -13,6 +16,13 @@ import { useAuth } from "@/hooks/useAuth";
 export default function UserManagement() {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    role: 'Viewer'
+  });
 
   const { data: users, isLoading, error } = useQuery({
     queryKey: ["/api/users"],
@@ -45,6 +55,40 @@ export default function UserManagement() {
       toast({
         title: "Error",
         description: "Failed to update user role",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await apiRequest("POST", "/api/users", userData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setIsAddUserOpen(false);
+      setNewUser({ email: '', firstName: '', lastName: '', role: 'Viewer' });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create user",
         variant: "destructive",
       });
     },
@@ -148,10 +192,85 @@ export default function UserManagement() {
           <p className="text-sm text-muted-foreground">Manage user accounts and permissions</p>
         </div>
         
-        <Button data-testid="button-add-user">
-          <i className="fas fa-user-plus mr-2"></i>
-          Add User
-        </Button>
+        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+          <DialogTrigger asChild>
+            <Button data-testid="button-add-user">
+              <i className="fas fa-user-plus mr-2"></i>
+              Add User
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New User</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  data-testid="input-user-email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  value={newUser.firstName}
+                  onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
+                  data-testid="input-user-firstname"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Doe"
+                  value={newUser.lastName}
+                  onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
+                  data-testid="input-user-lastname"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select value={newUser.role} onValueChange={(role) => setNewUser({ ...newUser, role })}>
+                  <SelectTrigger data-testid="select-user-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Viewer">Viewer</SelectItem>
+                    <SelectItem value="Staff">Staff</SelectItem>
+                    <SelectItem value="Manager">Manager</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddUserOpen(false);
+                    setNewUser({ email: '', firstName: '', lastName: '', role: 'Viewer' });
+                  }}
+                  data-testid="button-cancel-add-user"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => createUserMutation.mutate(newUser)}
+                  disabled={!newUser.email || createUserMutation.isPending}
+                  data-testid="button-create-user"
+                >
+                  {createUserMutation.isPending ? "Creating..." : "Create User"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Users Table */}
