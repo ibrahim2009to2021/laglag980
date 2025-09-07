@@ -467,31 +467,9 @@ export default function AddProduct() {
                   maxFileSize={10485760} // 10MB
                   onGetUploadParameters={handleGetUploadParameters}
                   onComplete={handleUploadComplete}
-                  buttonClassName="w-full"
+                  buttonClassName="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg transition-colors"
                 >
-                  <div className={`rounded-lg p-8 text-center transition-all duration-300 cursor-pointer min-h-[120px] flex items-center justify-center border-2 border-dashed ${
-                    uploadedImageUrl 
-                      ? 'bg-green-50 dark:bg-green-950/20 border-green-300 hover:bg-green-100 dark:hover:bg-green-900/30' 
-                      : 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                  }`}>
-                    {uploadedImageUrl ? (
-                      <div className="space-y-3">
-                        <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full">
-                          <i className="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
-                        </div>
-                        <div>
-                          <p className="text-base font-medium text-green-700 dark:text-green-300">Image uploaded successfully!</p>
-                          <p className="text-sm text-green-600 dark:text-green-400 mt-1">QR code will be generated after saving</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-                          <i className="fas fa-image text-2xl text-blue-600 dark:text-blue-400"></i>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  Upload Image
                 </ObjectUploader>
               </div>
 
