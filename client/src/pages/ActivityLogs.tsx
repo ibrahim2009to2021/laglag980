@@ -82,7 +82,7 @@ export default function ActivityLogs() {
               <SelectValue placeholder="All Activities" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Activities</SelectItem>
+              <SelectItem value="all">All Activities</SelectItem>
               <SelectItem value="Products">Product Activities</SelectItem>
               <SelectItem value="Invoices">Invoice Activities</SelectItem>
               <SelectItem value="Users">User Activities</SelectItem>

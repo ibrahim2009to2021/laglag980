@@ -193,7 +193,7 @@ export default function Invoices() {
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Processed">Processed</SelectItem>
             </SelectContent>

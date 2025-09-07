@@ -108,7 +108,7 @@ export default function Products() {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="Dresses">Dresses</SelectItem>
               <SelectItem value="Tops">Tops</SelectItem>
               <SelectItem value="Bottoms">Bottoms</SelectItem>
@@ -122,7 +122,7 @@ export default function Products() {
               <SelectValue placeholder="All Sizes" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Sizes</SelectItem>
+              <SelectItem value="all">All Sizes</SelectItem>
               <SelectItem value="XS">XS</SelectItem>
               <SelectItem value="S">S</SelectItem>
               <SelectItem value="M">M</SelectItem>
@@ -136,7 +136,7 @@ export default function Products() {
               <SelectValue placeholder="All Stock Levels" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Stock Levels</SelectItem>
+              <SelectItem value="all">All Stock Levels</SelectItem>
               <SelectItem value="in">In Stock</SelectItem>
               <SelectItem value="low">Low Stock</SelectItem>
               <SelectItem value="out">Out of Stock</SelectItem>
