@@ -121,7 +121,7 @@ export default function Dashboard() {
                 {metricsLoading ? (
                   <Skeleton className="h-8 w-20 mt-2" />
                 ) : (
-                  <p className="text-2xl font-bold text-foreground" data-testid="text-monthly-revenue">
+                  <p className="text-lg font-bold text-foreground" data-testid="text-monthly-revenue">
                     {formatCurrency(metrics?.monthlyRevenue || 0)}
                   </p>
                 )}
