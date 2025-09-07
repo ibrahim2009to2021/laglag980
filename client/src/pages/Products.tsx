@@ -261,10 +261,10 @@ export default function Products() {
           </div>
 
           {/* Pagination */}
-          {productsData?.total > 12 && (
+          {productsData?.total && productsData.total > 12 && (
             <div className="flex items-center justify-between mt-8">
               <p className="text-sm text-muted-foreground">
-                Showing {((page - 1) * 12) + 1} to {Math.min(page * 12, productsData.total)} of {productsData.total} results
+                Showing {((page - 1) * 12) + 1} to {Math.min(page * 12, productsData?.total || 0)} of {productsData?.total || 0} results
               </p>
               <div className="flex items-center space-x-2">
                 <Button 
@@ -281,7 +281,7 @@ export default function Products() {
                   variant="outline" 
                   size="sm"
                   onClick={() => setPage(p => p + 1)}
-                  disabled={page * 12 >= productsData.total}
+                  disabled={page * 12 >= (productsData?.total || 0)}
                   data-testid="button-next-page"
                 >
                   Next

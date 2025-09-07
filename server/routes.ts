@@ -230,15 +230,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const product = await storage.createProduct(validatedProduct);
       
-      // Generate QR code if image is provided
-      if (validatedProduct.imageUrl) {
-        try {
-          const qrCodeData = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/products/${product.id}`;
-          const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
-          await storage.updateProductQRCode(product.id, qrCodeUrl);
-        } catch (qrError) {
-          console.error("Error generating QR code:", qrError);
-        }
+      // Generate QR code for all products
+      try {
+        const qrCodeData = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/products/${product.id}`;
+        const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
+        await storage.updateProductQRCode(product.id, qrCodeUrl);
+      } catch (qrError) {
+        console.error("Error generating QR code:", qrError);
       }
       
       await logActivity(req, `Created product "${product.productName}"`, 'Products', product.id, product.productName);
