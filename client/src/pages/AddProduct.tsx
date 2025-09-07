@@ -467,12 +467,12 @@ export default function AddProduct() {
                   maxFileSize={10485760} // 10MB
                   onGetUploadParameters={handleGetUploadParameters}
                   onComplete={handleUploadComplete}
-                  buttonClassName="w-full h-full"
+                  buttonClassName="w-full h-full !bg-transparent !border-0 !shadow-none !p-0"
                 >
-                  <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer min-h-[120px] flex items-center justify-center ${
+                  <div className={`rounded-lg p-12 text-center transition-all duration-300 cursor-pointer min-h-[120px] flex items-center justify-center w-full ${
                     uploadedImageUrl 
                       ? 'bg-green-50 dark:bg-green-950/20 border-2 border-green-300' 
-                      : 'bg-blue-50/50 dark:bg-blue-950/20 border-2 border-blue-300/50 hover:bg-blue-100/50 dark:hover:bg-blue-900/30'
+                      : 'bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
                   }`}>
                     {uploadedImageUrl ? (
                       <div className="space-y-3">
@@ -486,7 +486,7 @@ export default function AddProduct() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <i className="fas fa-cloud-upload-alt text-4xl text-blue-400"></i>
+                        <i className="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
                       </div>
                     )}
                   </div>
