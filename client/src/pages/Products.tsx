@@ -672,7 +672,7 @@ export default function Products() {
                       size="sm"
                       onClick={() => deleteProductMutation.mutate(product.id)}
                       disabled={deleteProductMutation.isPending}
-                      className="text-destructive hover:text-destructive"
+                      className="text-red-600 hover:text-white hover:bg-red-600 border-red-600 hover:border-red-600"
                       data-testid={`button-delete-${product.id}`}
                     >
                       <i className="fas fa-trash w-4 h-4"></i>
