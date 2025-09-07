@@ -270,18 +270,42 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInvoiceStatus(id: string, status: string, processedBy?: string): Promise<Invoice> {
-    const updateData: any = { status, updatedAt: new Date() };
-    if (status === 'Processed' && processedBy) {
-      updateData.processedBy = processedBy;
-      updateData.processedAt = new Date();
-    }
-    
-    const [invoice] = await db
-      .update(invoices)
-      .set(updateData)
-      .where(eq(invoices.id, id))
-      .returning();
-    return invoice;
+    return await db.transaction(async (tx) => {
+      const updateData: any = { status, updatedAt: new Date() };
+      if (status === 'Processed' && processedBy) {
+        updateData.processedBy = processedBy;
+        updateData.processedAt = new Date();
+      }
+      
+      // Update invoice status
+      const [invoice] = await tx
+        .update(invoices)
+        .set(updateData)
+        .where(eq(invoices.id, id))
+        .returning();
+      
+      // If processing the invoice, deduct inventory quantities
+      if (status === 'Processed') {
+        // Get invoice items
+        const items = await tx
+          .select()
+          .from(invoiceItems)
+          .where(eq(invoiceItems.invoiceId, id));
+        
+        // Deduct inventory for each item
+        for (const item of items) {
+          await tx
+            .update(products)
+            .set({ 
+              quantity: sql`${products.quantity} - ${item.quantity}`,
+              updatedAt: new Date()
+            })
+            .where(eq(products.id, item.productId));
+        }
+      }
+      
+      return invoice;
+    });
   }
 
   async updateInvoicePdfPath(id: string, pdfPath: string): Promise<Invoice> {
