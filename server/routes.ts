@@ -10,6 +10,7 @@ import QRCode from "qrcode";
 import { randomUUID } from "crypto";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
+import multer from "multer";
 
 // QR Code upload function
 const uploadQRCodeToStorage = async (productId: string, qrCodeBuffer: Buffer): Promise<string> => {
@@ -174,6 +175,19 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
   });
 };
 
+// Configure multer for file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -323,6 +337,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating product:", error);
       res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Bulk upload products from CSV
+  app.post("/api/products/bulk-upload", isAuthenticated, upload.single('csvFile'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No CSV file provided" });
+      }
+
+      const csvData = req.file.buffer.toString('utf8');
+      const lines = csvData.split('\n').filter((line: string) => line.trim());
+      
+      if (lines.length < 2) {
+        return res.status(400).json({ message: "CSV file must contain header and at least one product row" });
+      }
+
+      // Parse CSV headers
+      const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
+      const expectedHeaders = ['Product ID', 'Product Name', 'Color', 'Size', 'Quantity', 'Price', 'Category', 'Description'];
+      
+      // Check if required headers exist
+      const requiredHeaders = ['Product ID', 'Product Name', 'Color', 'Size', 'Quantity', 'Price'];
+      const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
+      
+      if (missingHeaders.length > 0) {
+        return res.status(400).json({ 
+          message: `Missing required headers: ${missingHeaders.join(', ')}` 
+        });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      // Process each product row
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = lines[i].split(',').map((v: string) => v.trim().replace(/"/g, ''));
+          
+          if (values.length < headers.length) {
+            errors.push(`Row ${i}: Insufficient columns`);
+            errorCount++;
+            continue;
+          }
+
+          const productData: any = {};
+          headers.forEach((header: string, index: number) => {
+            const value = values[index] || '';
+            switch (header) {
+              case 'Product ID':
+                productData.productId = value;
+                break;
+              case 'Product Name':
+                productData.productName = value;
+                break;
+              case 'Color':
+                productData.color = value;
+                break;
+              case 'Size':
+                productData.size = value;
+                break;
+              case 'Quantity':
+                productData.quantity = parseInt(value) || 0;
+                break;
+              case 'Price':
+                productData.price = parseFloat(value) || 0;
+                break;
+              case 'Category':
+                productData.category = value || null;
+                break;
+              case 'Description':
+                productData.description = value || null;
+                break;
+            }
+          });
+
+          // Validate required fields
+          if (!productData.productId || !productData.productName || !productData.color || !productData.size) {
+            errors.push(`Row ${i}: Missing required fields`);
+            errorCount++;
+            continue;
+          }
+
+          // Check if product ID already exists
+          const existingProduct = await storage.getProductByProductId(productData.productId);
+          if (existingProduct) {
+            errors.push(`Row ${i}: Product ID ${productData.productId} already exists`);
+            errorCount++;
+            continue;
+          }
+
+          // Validate with schema
+          const validatedProduct = insertProductSchema.parse(productData);
+          
+          // Create product
+          const product = await storage.createProduct({
+            ...validatedProduct,
+            imageUrl: null, // No image for bulk upload initially
+          });
+
+          await storage.createActivityLog({
+            userId: req.user.claims.sub,
+            action: 'create',
+            entity: 'product',
+            entityId: product.id,
+            details: `Bulk uploaded product: ${product.productName}`,
+          });
+
+          successCount++;
+
+        } catch (error) {
+          console.error(`Error processing row ${i}:`, error);
+          errors.push(`Row ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errorCount++;
+        }
+      }
+
+      res.json({
+        message: `Bulk upload completed`,
+        successCount,
+        errorCount,
+        errors: errors.slice(0, 10) // Return first 10 errors only
+      });
+
+    } catch (error) {
+      console.error("Error in bulk upload:", error);
+      res.status(500).json({ message: "Failed to process bulk upload" });
     }
   });
 

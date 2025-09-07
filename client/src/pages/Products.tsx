@@ -29,6 +29,7 @@ export default function Products() {
     stockLevel: ""
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
 
   const editProductSchema = z.object({
     productName: z.string().min(1, "Product name is required"),
@@ -226,6 +227,50 @@ export default function Products() {
     }
   };
 
+  const bulkUploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('csvFile', file);
+      const response = await fetch('/api/products/bulk-upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Bulk Upload Successful",
+        description: `Successfully uploaded ${data.successCount} products. ${data.errorCount > 0 ? `${data.errorCount} errors occurred.` : ''}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      setBulkUploadFile(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Upload Failed",
+        description: error.message || "Failed to upload products",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleBulkUpload = () => {
+    if (!bulkUploadFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a CSV file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+    bulkUploadMutation.mutate(bulkUploadFile);
+  };
+
   if (error) {
     return (
       <div className="text-center py-8">
@@ -298,6 +343,35 @@ export default function Products() {
             <i className="fas fa-download mr-2"></i>
             Export CSV
           </Button>
+          
+          <div className="relative">
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(e) => setBulkUploadFile(e.target.files?.[0] || null)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              data-testid="input-bulk-upload-file"
+            />
+            <Button 
+              variant="outline" 
+              data-testid="button-select-bulk-upload"
+            >
+              <i className="fas fa-upload mr-2"></i>
+              {bulkUploadFile ? bulkUploadFile.name.substring(0, 15) + '...' : 'Select CSV'}
+            </Button>
+          </div>
+          
+          {bulkUploadFile && (
+            <Button 
+              onClick={handleBulkUpload}
+              disabled={bulkUploadMutation.isPending}
+              data-testid="button-bulk-upload"
+            >
+              <i className="fas fa-cloud-upload-alt mr-2"></i>
+              {bulkUploadMutation.isPending ? "Uploading..." : "Bulk Upload"}
+            </Button>
+          )}
+          
           <Link href="/add-product">
             <Button data-testid="button-add-product">
               <i className="fas fa-plus mr-2"></i>
