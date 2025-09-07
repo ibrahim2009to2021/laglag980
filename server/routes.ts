@@ -577,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { role } = req.body;
       const user = await storage.updateUserRole(req.params.id, role);
       
-      await logActivity(req, `Updated user ${user?.email} role to ${role}`, 'Users', user?.id, user?.email);
+      await logActivity(req, `Updated user ${user?.email} role to ${role}`, 'Users', user?.id || undefined, user?.email || undefined);
       
       res.json(user);
     } catch (error) {
@@ -598,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { isActive } = req.body;
       const user = await storage.updateUserStatus(req.params.id, isActive);
       
-      await logActivity(req, `${isActive ? 'Activated' : 'Deactivated'} user ${user?.email}`, 'Users', user?.id, user?.email);
+      await logActivity(req, `${isActive ? 'Activated' : 'Deactivated'} user ${user?.email}`, 'Users', user?.id || undefined, user?.email || undefined);
       
       res.json(user);
     } catch (error) {
