@@ -1,5 +1,5 @@
-import Sidebar from "./Sidebar";
-import Header from "./Header";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/Products";
 import AddProduct from "@/pages/AddProduct";
@@ -8,7 +8,7 @@ import Invoices from "@/pages/Invoices";
 import CreateInvoice from "@/pages/CreateInvoice";
 import UserManagement from "@/pages/UserManagement";
 import ActivityLogs from "@/pages/ActivityLogs";
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface LayoutProps {
   page: string;
