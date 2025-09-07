@@ -169,7 +169,15 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
       yPosition += 40;
       doc.fontSize(12).text('Notes:', 50, yPosition);
       doc.text(invoice.notes, 50, yPosition + 15);
+      yPosition += 50;
+    } else {
+      yPosition += 40;
     }
+    
+    // Company footer
+    doc.fontSize(10).text('Volume Fashion Collection', 50, yPosition);
+    doc.text('4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China', 50, yPosition + 12);
+    doc.text('Tel:+8613288689165', 50, yPosition + 24);
     
     doc.end();
   });
