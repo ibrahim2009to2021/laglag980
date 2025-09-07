@@ -151,6 +151,79 @@ export default function Products() {
     }).format(typeof price === 'string' ? parseFloat(price) : price);
   };
 
+  const exportToCSV = async () => {
+    try {
+      // Fetch all products without pagination for export
+      const response = await fetch('/api/products?limit=1000');
+      const data: ProductsResponse = await response.json();
+      
+      if (!data.products || data.products.length === 0) {
+        toast({
+          title: "No Data",
+          description: "No products found to export",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create CSV headers
+      const headers = [
+        'Product ID',
+        'Product Name', 
+        'Color',
+        'Size',
+        'Quantity',
+        'Price',
+        'Category',
+        'Description',
+        'Created Date'
+      ];
+
+      // Convert products to CSV rows
+      const csvRows = [
+        headers.join(','),
+        ...data.products.map(product => [
+          `"${product.productId}"`,
+          `"${product.productName}"`,
+          `"${product.color}"`,
+          `"${product.size}"`,
+          product.quantity,
+          product.price,
+          `"${product.category || ''}"`,
+          `"${product.description || ''}"`,
+          `"${new Date(product.createdAt || '').toLocaleDateString()}"`
+        ].join(','))
+      ];
+
+      // Create and download CSV file
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `products_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export Successful",
+        description: `Exported ${data.products.length} products to CSV`,
+      });
+
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export Failed", 
+        description: "Failed to export products. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (error) {
     return (
       <div className="text-center py-8">
@@ -215,7 +288,11 @@ export default function Products() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" data-testid="button-export-csv">
+          <Button 
+            variant="outline" 
+            onClick={exportToCSV}
+            data-testid="button-export-csv"
+          >
             <i className="fas fa-download mr-2"></i>
             Export CSV
           </Button>
