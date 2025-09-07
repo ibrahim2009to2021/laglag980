@@ -634,6 +634,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { invoice: invoiceData, items: itemsData } = req.body;
       
+      console.log("Invoice creation request body:", JSON.stringify(req.body, null, 2));
+      console.log("Invoice data:", JSON.stringify(invoiceData, null, 2));
+      console.log("Items data:", JSON.stringify(itemsData, null, 2));
+      
       const validatedInvoice = insertInvoiceSchema.parse({
         ...invoiceData,
         createdBy: req.user.claims.sub
@@ -650,6 +654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(invoice);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.log("Zod validation error:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ message: "Invalid invoice data", errors: error.errors });
       }
       console.error("Error creating invoice:", error);
