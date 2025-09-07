@@ -23,6 +23,7 @@ function Router() {
           <Route path="/add-product" component={() => <Layout page="add-product" />} />
           <Route path="/bulk-upload" component={() => <Layout page="bulk-upload" />} />
           <Route path="/invoices" component={() => <Layout page="invoices" />} />
+          <Route path="/invoices/:id" component={() => <Layout page="invoice-detail" />} />
           <Route path="/create-invoice" component={() => <Layout page="create-invoice" />} />
           <Route path="/users" component={() => <Layout page="users" />} />
           <Route path="/activity-logs" component={() => <Layout page="activity-logs" />} />

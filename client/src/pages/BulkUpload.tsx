@@ -18,8 +18,17 @@ export default function BulkUpload() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const bulkUploadMutation = useMutation({
-    mutationFn: async (products: any[]) => {
-      const response = await apiRequest("POST", "/api/products/bulk", { products });
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch("/api/products/bulk-upload", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload");
+      }
+      
       return response.json();
     },
     onSuccess: (results) => {

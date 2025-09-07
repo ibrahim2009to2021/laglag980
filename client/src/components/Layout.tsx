@@ -7,6 +7,7 @@ import AddProduct from "@/pages/AddProduct";
 import BulkUpload from "@/pages/BulkUpload";
 import Invoices from "@/pages/Invoices";
 import CreateInvoice from "@/pages/CreateInvoice";
+import InvoiceDetail from "@/pages/InvoiceDetail";
 import UserManagement from "@/pages/UserManagement";
 import ActivityLogs from "@/pages/ActivityLogs";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -22,6 +23,7 @@ const pageComponents = {
   "add-product": AddProduct,
   "bulk-upload": BulkUpload,
   invoices: Invoices,
+  "invoice-detail": InvoiceDetail,
   "create-invoice": CreateInvoice,
   users: UserManagement,
   "activity-logs": ActivityLogs,
@@ -34,6 +36,7 @@ const pageTitles = {
   "add-product": 'Add Product',
   "bulk-upload": 'Bulk Upload',
   invoices: 'Invoices',
+  "invoice-detail": 'Invoice Details',
   "create-invoice": 'Create Invoice',
   users: 'User Management',
   "activity-logs": 'Activity Logs',

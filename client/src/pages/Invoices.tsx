@@ -270,7 +270,12 @@ export default function Invoices() {
                   ))
                 ) : invoicesData?.invoices?.length ? (
                   invoicesData.invoices.map((invoice: any) => (
-                    <tr key={invoice.id} data-testid={`row-invoice-${invoice.id}`}>
+                    <tr 
+                      key={invoice.id} 
+                      className="hover:bg-accent/50 cursor-pointer transition-colors"
+                      onClick={() => window.location.href = `/invoices/${invoice.id}`}
+                      data-testid={`row-invoice-${invoice.id}`}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                         {invoice.invoiceNumber}
                       </td>
@@ -287,13 +292,15 @@ export default function Invoices() {
                         {getStatusBadge(invoice.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          data-testid={`button-view-${invoice.id}`}
-                        >
-                          <i className="fas fa-eye w-4 h-4"></i>
-                        </Button>
+                        <Link href={`/invoices/${invoice.id}`}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            data-testid={`button-view-${invoice.id}`}
+                          >
+                            <i className="fas fa-eye w-4 h-4"></i>
+                          </Button>
+                        </Link>
                         
                         {invoice.status === 'Processed' ? (
                           <>
