@@ -322,7 +322,7 @@ export default function Products() {
                               size: product.size,
                               quantity: Number(product.quantity),
                               price: Number(product.price),
-                              category: product.category || "",
+                              category: product.category || "none",
                               description: product.description || "",
                             });
                           }}
@@ -448,7 +448,7 @@ export default function Products() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        <SelectItem value="">No Category</SelectItem>
+                                        <SelectItem value="none">No Category</SelectItem>
                                         <SelectItem value="Dresses">Dresses</SelectItem>
                                         <SelectItem value="Tops">Tops</SelectItem>
                                         <SelectItem value="Bottoms">Bottoms</SelectItem>
