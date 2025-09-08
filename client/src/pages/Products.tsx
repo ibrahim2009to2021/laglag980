@@ -284,17 +284,17 @@ export default function Products() {
     <div className="space-y-6">
       {/* Filters and Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
           <Input
             placeholder="Search products..."
             value={filters.search}
             onChange={(e) => handleFilterChange("search", e.target.value)}
-            className="w-64"
+            className="w-full sm:w-64"
             data-testid="input-search-products"
           />
           
           <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
-            <SelectTrigger className="w-40" data-testid="select-category">
+            <SelectTrigger className="w-full sm:w-40" data-testid="select-category">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -308,7 +308,7 @@ export default function Products() {
           </Select>
           
           <Select value={filters.size} onValueChange={(value) => handleFilterChange("size", value)}>
-            <SelectTrigger className="w-32" data-testid="select-size">
+            <SelectTrigger className="w-full sm:w-32" data-testid="select-size">
               <SelectValue placeholder="All Sizes" />
             </SelectTrigger>
             <SelectContent>

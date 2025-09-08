@@ -187,9 +187,9 @@ export default function Invoices() {
     <div className="space-y-6">
       {/* Invoice Filters */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
           <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
-            <SelectTrigger className="w-40" data-testid="select-status">
+            <SelectTrigger className="w-full sm:w-40" data-testid="select-status">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -203,7 +203,7 @@ export default function Invoices() {
             type="date"
             value={filters.startDate}
             onChange={(e) => handleFilterChange("startDate", e.target.value)}
-            className="w-40"
+            className="w-full sm:w-40"
             placeholder="Date from"
             data-testid="input-start-date"
           />
@@ -212,7 +212,7 @@ export default function Invoices() {
             type="date"
             value={filters.endDate}
             onChange={(e) => handleFilterChange("endDate", e.target.value)}
-            className="w-40"
+            className="w-full sm:w-40"
             placeholder="Date to"
             data-testid="input-end-date"
           />
