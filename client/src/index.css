@@ -113,3 +113,39 @@
 
 /* Uppy Styles for Object Uploader */
 @import url('https://releases.transloadit.com/uppy/v3.3.1/uppy.min.css');
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Better touch targets for mobile */
+  button, .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for mobile forms */
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Ensure dialogs are mobile-friendly */
+  [role="dialog"] {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+  }
+  
+  /* Make tables more readable on mobile */
+  table {
+    font-size: 0.875rem;
+  }
+  
+  th, td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* Better input fields for touch */
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
+}
