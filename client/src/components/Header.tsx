@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   title: string;
+  onMenuClick?: () => void;
 }
 
-export default function Header({ title }: HeaderProps) {
+export default function Header({ title, onMenuClick }: HeaderProps) {
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark';
@@ -31,16 +32,26 @@ export default function Header({ title }: HeaderProps) {
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+          {/* Mobile Menu Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden"
+            onClick={onMenuClick}
+            data-testid="button-mobile-menu"
+          >
+            <i className="fas fa-bars w-5 h-5"></i>
+          </Button>
+          <h2 className="text-lg lg:text-xl font-semibold text-foreground">{title}</h2>
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Search Bar */}
-          <div className="relative">
+          {/* Search Bar - Hidden on mobile */}
+          <div className="relative hidden md:block">
             <Input
               type="text" 
               placeholder="Search products..." 
-              className="w-64 pl-10"
+              className="w-40 lg:w-64 pl-10"
               data-testid="input-search"
             />
             <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"></i>

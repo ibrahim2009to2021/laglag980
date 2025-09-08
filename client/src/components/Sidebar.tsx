@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   currentPage: string;
+  onClose?: () => void;
 }
 
 const navigationItems = [
@@ -17,7 +18,7 @@ const navigationItems = [
   { id: "activity-logs", path: "/activity-logs", icon: "fas fa-history", label: "Activity Logs", roles: ["Admin", "Manager"] },
 ];
 
-export default function Sidebar({ currentPage }: SidebarProps) {
+export default function Sidebar({ currentPage, onClose }: SidebarProps) {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
@@ -34,16 +35,29 @@ export default function Sidebar({ currentPage }: SidebarProps) {
   );
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col">
+    <aside className="w-64 bg-card border-r border-border flex flex-col h-screen">
       <div className="p-6">
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <i className="fas fa-tshirt text-primary-foreground text-lg"></i>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <i className="fas fa-tshirt text-primary-foreground text-lg"></i>
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Volume Fashion</h1>
+              <p className="text-xs text-muted-foreground">Inventory & Invoicing</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">FashionHub</h1>
-            <p className="text-xs text-muted-foreground">Inventory System</p>
-          </div>
+          
+          {/* Mobile Close Button */}
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="lg:hidden text-muted-foreground hover:text-foreground transition-colors p-1"
+              data-testid="button-close-sidebar"
+            >
+              <i className="fas fa-times w-5 h-5"></i>
+            </button>
+          )}
         </div>
 
         <nav className="space-y-2">
