@@ -63,15 +63,50 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs"></span>
           </Button>
 
-          {/* Theme Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme}
-            data-testid="button-theme-toggle"
-          >
-            <i className={`fas ${isDark ? 'fa-sun' : 'fa-moon'} w-5 h-5`}></i>
-          </Button>
+          {/* Theme Toggle - Enhanced with clear labels */}
+          <div className="flex items-center bg-muted rounded-lg p-1">
+            <Button 
+              variant={isDark ? "ghost" : "default"} 
+              size="sm" 
+              onClick={() => {
+                if (isDark) {
+                  setIsDark(false);
+                  document.documentElement.classList.remove('dark');
+                  localStorage.setItem('theme', 'light');
+                }
+              }}
+              className={`px-3 py-2 rounded-md transition-all duration-200 ${
+                !isDark 
+                  ? 'bg-background text-foreground shadow-sm border' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              data-testid="button-light-mode"
+            >
+              <i className="fas fa-sun w-4 h-4 mr-2"></i>
+              <span className="text-sm font-medium">Light</span>
+            </Button>
+            
+            <Button 
+              variant={isDark ? "default" : "ghost"} 
+              size="sm" 
+              onClick={() => {
+                if (!isDark) {
+                  setIsDark(true);
+                  document.documentElement.classList.add('dark');
+                  localStorage.setItem('theme', 'dark');
+                }
+              }}
+              className={`px-3 py-2 rounded-md transition-all duration-200 ml-1 ${
+                isDark 
+                  ? 'bg-background text-foreground shadow-sm border' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              data-testid="button-dark-mode"
+            >
+              <i className="fas fa-moon w-4 h-4 mr-2"></i>
+              <span className="text-sm font-medium">Dark</span>
+            </Button>
+          </div>
         </div>
       </div>
     </header>
