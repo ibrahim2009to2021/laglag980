@@ -143,7 +143,16 @@ export default function LoginPage() {
                 <p>Tel: +86 132 8868 9165</p>
                 <p>
                   <i className="fab fa-whatsapp mr-1 text-green-600"></i>
-                  WhatsApp: +962796100166, +8613660002778
+                  WhatsApp: 
+                  <a 
+                    href="https://wa.link/mb5xbk" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 ml-1"
+                  >
+                    +962796100166
+                  </a>
+                  , +8613660002778
                 </p>
                 <p>
                   <a 
