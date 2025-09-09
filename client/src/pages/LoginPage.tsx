@@ -135,14 +135,8 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <h3 className="text-sm font-medium mb-2">Contact Information:</h3>
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p><strong>Address:</strong> 4006-4008 Room, 5th Floor, Changjiang International Garment Building</p>
-                <p>No.931, Renmingbei Road, Yuexiu District, Guangzhou, China</p>
-                <p><strong>Tel:</strong> +86 132 8868 9165</p>
-                <p><strong>Email:</strong> info@volumefashion.com</p>
-              </div>
+            <div className="mt-6 p-4 bg-muted rounded-lg text-center">
+              <p className="text-sm font-medium text-muted-foreground">Volume - Fashion</p>
             </div>
           </CardContent>
         </Card>
