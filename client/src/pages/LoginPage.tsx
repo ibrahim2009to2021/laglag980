@@ -171,14 +171,17 @@ export default function LoginPage() {
                     href="https://instagram.com/volume_fashion1" 
                     target="_blank" 
                     style={{textDecoration: 'none', color: 'inherit'}}
+                    className="inline-flex items-center"
                   >
                     <img 
                       src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" 
                       alt="Instagram" 
                       width="20" 
+                      height="20"
                       style={{verticalAlign: 'middle', marginRight: '5px'}}
+                      className="inline-block"
                     />
-                    @volume_fashion1
+                    <span>@volume_fashion1</span>
                   </a>
                 </p>
               </div>
