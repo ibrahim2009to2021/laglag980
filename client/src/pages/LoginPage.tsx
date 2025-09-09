@@ -62,15 +62,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
       <div className="w-full max-w-md">
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-              <i className="fas fa-shopping-bag text-primary-foreground text-xl"></i>
+            <div className="mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1757421254360.png" 
+                alt="Volume Fashion Logo" 
+                className="w-16 h-16 rounded-full object-cover"
+              />
             </div>
-            <CardTitle className="text-2xl font-bold">Volume Fashion Collection</CardTitle>
-            <p className="text-muted-foreground">Fashion Inventory & Invoicing System</p>
+            <CardTitle className="text-2xl font-bold text-white">Volume Fashion Collection</CardTitle>
+            <p className="text-gray-300">Fashion Inventory & Invoicing System</p>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -80,13 +84,14 @@ export default function LoginPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel className="text-gray-200">Username</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
                           placeholder="Enter your username"
                           disabled={isLoading}
                           data-testid="input-username"
+                          className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
                         />
                       </FormControl>
                       <FormMessage />
@@ -99,7 +104,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-gray-200">Password</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
@@ -107,6 +112,7 @@ export default function LoginPage() {
                           placeholder="Enter your password"
                           disabled={isLoading}
                           data-testid="input-password"
+                          className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
                         />
                       </FormControl>
                       <FormMessage />
@@ -116,7 +122,7 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
                   disabled={isLoading}
                   data-testid="button-login"
                 >
@@ -135,18 +141,18 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            <div className="mt-6 p-4 bg-muted rounded-lg text-left">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Volume Fashion Collection</p>
-              <div className="text-xs text-muted-foreground space-y-1">
+            <div className="mt-6 p-4 bg-gray-700 rounded-lg text-left">
+              <p className="text-sm font-medium text-gray-200 mb-2">Volume Fashion Collection</p>
+              <div className="text-xs text-gray-300 space-y-1">
                 <p>Address: 4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China</p>
-                <p>Phone: <a href="tel:+8613288689165" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">+86 132 8868 9165</a></p>
+                <p>Phone: <a href="tel:+8613288689165" className="text-blue-400 hover:text-blue-300">+86 132 8868 9165</a></p>
                 <p>
                   WhatsApp:
                   <a 
                     href="https://wa.link/mb5xbk" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 ml-1"
+                    className="text-green-400 hover:text-green-300 ml-1"
                   >
                     +962796100166
                   </a>
@@ -155,7 +161,7 @@ export default function LoginPage() {
                     href="https://wa.link/g3bblj" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                    className="text-green-400 hover:text-green-300"
                   >
                     +8613660002778
                   </a>
