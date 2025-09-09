@@ -165,10 +165,15 @@ export default function LoginPage() {
                     href="https://www.instagram.com/volume_fashion1/" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    style={{textDecoration: 'none', color: 'inherit'}}
                   >
-                    <i className="fab fa-instagram mr-1"></i>
-                    volume_fashion1
+                    <img 
+                      src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" 
+                      alt="Instagram" 
+                      width="20" 
+                      style={{verticalAlign: 'middle', marginRight: '5px'}}
+                    />
+                    @volume_fashion1
                   </a>
                 </p>
               </div>
