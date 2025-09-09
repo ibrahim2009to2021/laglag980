@@ -141,6 +141,17 @@ export default function LoginPage() {
                 <p>4006-4008 Room, 5th Floor, Changjiang International Garment Building</p>
                 <p>No.931, Renmingbei Road, Yuexiu District, Guangzhou, China</p>
                 <p>Tel: +86 132 8868 9165</p>
+                <p>
+                  <a 
+                    href="https://www.instagram.com/volume_fashion1/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    <i className="fab fa-instagram mr-1"></i>
+                    @volume_fashion1
+                  </a>
+                </p>
               </div>
             </div>
           </CardContent>
