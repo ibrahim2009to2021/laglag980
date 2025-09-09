@@ -162,9 +162,8 @@ export default function LoginPage() {
                 </p>
                 <p>
                   <a 
-                    href="https://www.instagram.com/volume_fashion1/" 
+                    href="https://instagram.com/volume_fashion1" 
                     target="_blank" 
-                    rel="noopener noreferrer"
                     style={{textDecoration: 'none', color: 'inherit'}}
                   >
                     <img 
