@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Dashboard from "@/pages/Dashboard";
 import { useState } from "react";
 import Products from "@/pages/Products";
@@ -69,7 +70,7 @@ export default function Layout({ page }: LayoutProps) {
           </div>
         )}
         
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-hidden flex flex-col">
           <Header 
             title={pageTitle} 
             onMenuClick={() => setIsSidebarOpen(true)}
@@ -77,6 +78,7 @@ export default function Layout({ page }: LayoutProps) {
           <div className="flex-1 overflow-y-auto p-3 lg:p-6">
             <PageComponent />
           </div>
+          <Footer />
         </main>
       </div>
     </ProtectedRoute>
