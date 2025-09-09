@@ -136,14 +136,12 @@ export default function LoginPage() {
             </Form>
 
             <div className="mt-6 p-4 bg-muted rounded-lg text-center">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Volume - Fashion</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Volume Fashion Collection</p>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>4006-4008 Room, 5th Floor, Changjiang International Garment Building</p>
-                <p>No.931, Renmingbei Road, Yuexiu District, Guangzhou, China</p>
-                <p>Tel: +86 132 8868 9165</p>
+                <p>Address: 4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China</p>
+                <p>Phone: Tel:+8613288689165</p>
                 <p>
-                  <i className="fab fa-whatsapp mr-1 text-green-600"></i>
-                  WhatsApp: 
+                  WhatsApp:
                   <a 
                     href="https://wa.link/mb5xbk" 
                     target="_blank" 
@@ -152,7 +150,7 @@ export default function LoginPage() {
                   >
                     +962796100166
                   </a>
-                  , 
+                  . 
                   <a 
                     href="https://wa.link/g3bblj" 
                     target="_blank" 
@@ -170,7 +168,7 @@ export default function LoginPage() {
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     <i className="fab fa-instagram mr-1"></i>
-                    @volume_fashion1
+                    volume_fashion1
                   </a>
                 </p>
               </div>
