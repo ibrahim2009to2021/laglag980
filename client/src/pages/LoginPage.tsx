@@ -135,7 +135,7 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            <div className="mt-6 p-4 bg-muted rounded-lg text-center">
+            <div className="mt-6 p-4 bg-muted rounded-lg text-left">
               <p className="text-sm font-medium text-muted-foreground mb-2">Volume Fashion Collection</p>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>Address: 4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China</p>
