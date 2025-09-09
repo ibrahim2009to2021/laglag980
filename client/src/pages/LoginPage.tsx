@@ -136,11 +136,12 @@ export default function LoginPage() {
             </Form>
 
             <div className="mt-6 p-4 bg-muted rounded-lg">
-              <h3 className="text-sm font-medium mb-2">Demo Credentials:</h3>
+              <h3 className="text-sm font-medium mb-2">Contact Information:</h3>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p><strong>Admin:</strong> abd.rabo.940@gmail.com / New@2025</p>
-                <p><strong>Manager:</strong> manager@example.com / password123</p>
-                <p><strong>Staff:</strong> staff@example.com / password123</p>
+                <p><strong>Address:</strong> 4006-4008 Room, 5th Floor, Changjiang International Garment Building</p>
+                <p>No.931, Renmingbei Road, Yuexiu District, Guangzhou, China</p>
+                <p><strong>Tel:</strong> +86 132 8868 9165</p>
+                <p><strong>Email:</strong> info@volumefashion.com</p>
               </div>
             </div>
           </CardContent>
