@@ -152,7 +152,15 @@ export default function LoginPage() {
                   >
                     +962796100166
                   </a>
-                  , +8613660002778
+                  , 
+                  <a 
+                    href="https://wa.link/g3bblj" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                  >
+                    +8613660002778
+                  </a>
                 </p>
                 <p>
                   <a 
