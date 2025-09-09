@@ -107,6 +107,20 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
               <span className="text-sm font-medium">Dark</span>
             </Button>
           </div>
+
+          {/* Logout Button */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              window.location.href = "/api/logout";
+            }}
+            className="px-4 py-2 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+            data-testid="button-logout"
+          >
+            <i className="fas fa-sign-out-alt w-4 h-4 mr-2"></i>
+            <span className="text-sm font-medium">Logout</span>
+          </Button>
         </div>
       </div>
     </header>
