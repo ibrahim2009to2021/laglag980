@@ -675,7 +675,11 @@ export default function Products() {
                       className="text-red-600 hover:text-white hover:bg-red-600 border-red-600 hover:border-red-600"
                       data-testid={`button-delete-${product.id}`}
                     >
-                      <i className="fas fa-trash w-4 h-4"></i>
+                      {deleteProductMutation.isPending ? (
+                        <i className="fas fa-spinner fa-spin w-4 h-4"></i>
+                      ) : (
+                        <i className="fas fa-trash w-4 h-4"></i>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
