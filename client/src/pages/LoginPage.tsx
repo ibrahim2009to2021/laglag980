@@ -142,6 +142,10 @@ export default function LoginPage() {
                 <p>No.931, Renmingbei Road, Yuexiu District, Guangzhou, China</p>
                 <p>Tel: +86 132 8868 9165</p>
                 <p>
+                  <i className="fab fa-whatsapp mr-1 text-green-600"></i>
+                  WhatsApp: +962796100166, +8613660002778
+                </p>
+                <p>
                   <a 
                     href="https://www.instagram.com/volume_fashion1/" 
                     target="_blank" 
