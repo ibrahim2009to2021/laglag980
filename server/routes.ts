@@ -99,7 +99,7 @@ const sendWhatsAppMessage = async (to: string, pdfUrl: string) => {
 // Activity logging helper
 const logActivity = async (req: any, action: string, module: string, targetId?: string, targetName?: string, details?: any) => {
   try {
-    const userId = req.user?.claims?.sub;
+    const userId = req.user?.id;
     await storage.createActivityLog({
       userId,
       action,
@@ -161,8 +161,15 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
     // Totals
     yPosition += 20;
     doc.text(`Subtotal: $${parseFloat(invoice.subtotal).toFixed(2)}`, 400, yPosition);
+    
+    // Add discount if present
+    if (invoice.discountAmount && parseFloat(invoice.discountAmount) > 0) {
+      yPosition += 15;
+      doc.text(`Discount (${(parseFloat(invoice.discountPercentage) * 100).toFixed(1)}%): -$${parseFloat(invoice.discountAmount).toFixed(2)}`, 400, yPosition);
+    }
+    
     yPosition += 15;
-    doc.text(`Tax: $${parseFloat(invoice.taxAmount).toFixed(2)}`, 400, yPosition);
+    doc.text(`Tax (${(parseFloat(invoice.taxRate) * 100).toFixed(1)}%): $${parseFloat(invoice.taxAmount).toFixed(2)}`, 400, yPosition);
     yPosition += 15;
     doc.fontSize(14).text(`Total: $${parseFloat(invoice.total).toFixed(2)}`, 400, yPosition);
     
@@ -175,10 +182,31 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
       yPosition += 40;
     }
     
-    // Company footer
-    doc.fontSize(10).text('Volume Fashion Collection', 50, yPosition);
-    doc.text('4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China', 50, yPosition + 12);
-    doc.text('Tel:+8613288689165', 50, yPosition + 24);
+    // Enhanced Company footer with better formatting
+    yPosition += 20;
+    
+    // Add a separator line
+    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+    yPosition += 15;
+    
+    // Company name - larger and bold
+    doc.fontSize(12).text('Volume Fashion Collection', 50, yPosition, { align: 'left' });
+    yPosition += 20;
+    
+    // Address with better formatting
+    doc.fontSize(9);
+    doc.text('Address:', 50, yPosition);
+    doc.text('4006-4008 Room, 5th Floor, Changjiang International Garment Building', 50, yPosition + 12);
+    doc.text('No.931, Renmingbei Road, Yuexiu District, Guangzhou, China', 50, yPosition + 24);
+    
+    // Contact info
+    doc.text('Contact:', 300, yPosition);
+    doc.text('Tel: +86 132 8868 9165', 300, yPosition + 12);
+    doc.text('Email: info@volumefashion.com', 300, yPosition + 24);
+    
+    // Thank you message
+    yPosition += 50;
+    doc.fontSize(10).text('Thank you for your business!', 50, yPosition, { align: 'center', width: 500 });
     
     doc.end();
   });
@@ -881,9 +909,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      const { email, firstName, lastName, role } = req.body;
+      const { email, firstName, lastName, role, username, password } = req.body;
       const user = await storage.upsertUser({
-        id: email, // Use email as ID for manual user creation
+        username: username || email, // Use username or fallback to email
+        password: password || 'defaultPassword123', // Temporary password
         email,
         firstName,
         lastName,
