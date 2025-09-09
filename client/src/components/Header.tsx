@@ -112,8 +112,19 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => {
-              window.location.href = "/api/logout";
+            onClick={async () => {
+              try {
+                const response = await fetch("/api/auth/logout", {
+                  method: "POST",
+                  credentials: "include"
+                });
+                if (response.ok) {
+                  window.location.href = "/";
+                }
+              } catch (error) {
+                console.error("Logout error:", error);
+                window.location.href = "/";
+              }
             }}
             className="px-4 py-2 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
             data-testid="button-logout"

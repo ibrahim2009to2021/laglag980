@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupCustomAuth, isAuthenticated } from "./customAuth";
+import passport from "passport";
 import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertActivityLogSchema } from "@shared/schema";
@@ -198,7 +199,7 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  await setupCustomAuth(app);
 
   // This endpoint is used to serve public assets.
   app.get("/public-objects/:filePath(*)", async (req, res) => {
@@ -217,20 +218,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (user) {
-        await storage.updateUserLastLogin(userId);
+  app.post('/api/auth/login', (req, res, next) => {
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ message: "Internal server error" });
       }
-      
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid username or password" });
+      }
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("Session error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({ message: "Login successful", user: { id: user.id, username: user.username, role: user.role } });
+      });
+    })(req, res, next);
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get('/api/auth/user', (req: any, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+    res.json(req.user);
   });
 
   // Object storage routes for product images
