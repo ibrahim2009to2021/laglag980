@@ -139,7 +139,7 @@ export default function LoginPage() {
               <p className="text-sm font-medium text-muted-foreground mb-2">Volume Fashion Collection</p>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>Address: 4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China</p>
-                <p>Phone: Tel:+8613288689165</p>
+                <p>Phone: <a href="tel:+8613288689165" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">+86 132 8868 9165</a></p>
                 <p>
                   WhatsApp:
                   <a 
