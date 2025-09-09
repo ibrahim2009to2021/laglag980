@@ -330,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedProduct = insertProductSchema.parse({
         ...req.body,
-        createdBy: req.user.claims.sub
+        createdBy: req.user.id
       });
       
       // Check for duplicate product ID
@@ -475,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
 
           await storage.createActivityLog({
-            userId: req.user.claims.sub,
+            userId: req.user.id,
             action: 'create',
             module: 'product',
             targetId: product.id,
@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validatedProducts = productData.map(p => 
-        insertProductSchema.parse({ ...p, createdBy: req.user.claims.sub })
+        insertProductSchema.parse({ ...p, createdBy: req.user.id })
       );
       
       // Check for duplicate product IDs
@@ -665,7 +665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedInvoice = insertInvoiceSchema.parse({
         ...invoiceData,
-        createdBy: req.user.claims.sub
+        createdBy: req.user.id
       });
       
       const validatedItems = itemsData.map((item: any) => 
@@ -689,7 +689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/invoices/:id/status", isAuthenticated, async (req: any, res) => {
     try {
       const { status } = req.body;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       // Only Admin/Manager can process invoices
@@ -815,7 +815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User management routes (Admin only)
   app.get("/api/users", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const currentUser = await storage.getUser(userId);
       
       if (currentUser?.role !== 'Admin') {
@@ -832,7 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/users/:id/role", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const currentUser = await storage.getUser(userId);
       
       if (currentUser?.role !== 'Admin') {
@@ -853,7 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/users/:id/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const currentUser = await storage.getUser(userId);
       
       if (currentUser?.role !== 'Admin') {
@@ -874,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/users", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const currentUser = await storage.getUser(userId);
       
       if (currentUser?.role !== 'Admin') {
