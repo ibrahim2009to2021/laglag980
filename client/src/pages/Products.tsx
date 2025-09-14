@@ -760,7 +760,7 @@ export default function Products() {
                             <i className="fas fa-spinner fa-spin w-4 h-4"></i>
                           ) : (
                             <img 
-                              src="/attached_assets/image_1757882941115.png" 
+                              src="/attached_assets/Untitled design (3)_1757884288503.png" 
                               alt="Delete" 
                               className="w-4 h-4"
                             />
