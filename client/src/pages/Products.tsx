@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -722,24 +723,47 @@ export default function Products() {
                         </Form>
                       </DialogContent>
                     </Dialog>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => deleteProductMutation.mutate(product.id)}
-                      disabled={deleteProductMutation.isPending}
-                      className="text-red-600 hover:text-white hover:bg-red-600 border-red-600 hover:border-red-600"
-                      data-testid={`button-delete-${product.id}`}
-                    >
-                      {deleteProductMutation.isPending ? (
-                        <i className="fas fa-spinner fa-spin w-4 h-4"></i>
-                      ) : (
-                        <img 
-                          src="/attached_assets/image_1757882941115.png" 
-                          alt="Delete" 
-                          className="w-4 h-4"
-                        />
-                      )}
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={deleteProductMutation.isPending}
+                          className="text-red-600 hover:text-white hover:bg-red-600 border-red-600 hover:border-red-600"
+                          data-testid={`button-delete-${product.id}`}
+                        >
+                          {deleteProductMutation.isPending ? (
+                            <i className="fas fa-spinner fa-spin w-4 h-4"></i>
+                          ) : (
+                            <img 
+                              src="/attached_assets/image_1757882941115.png" 
+                              alt="Delete" 
+                              className="w-4 h-4"
+                            />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This move will delete your product permanently. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel data-testid={`button-cancel-delete-${product.id}`}>
+                            No, Don't Delete
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteProductMutation.mutate(product.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-testid={`button-confirm-delete-${product.id}`}
+                          >
+                            Yes
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>
