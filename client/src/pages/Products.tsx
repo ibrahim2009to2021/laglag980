@@ -443,11 +443,66 @@ export default function Products() {
                         <DialogHeader>
                           <DialogTitle>QR Code - {product.productName}</DialogTitle>
                         </DialogHeader>
-                        <div className="text-center p-6">
+                        <div className="text-center p-6" id={`qr-print-area-${product.id}`}>
                           <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
                           <p className="text-base font-medium text-foreground mt-4">
                             {product.productName}
                           </p>
+                          <p className="text-sm text-muted-foreground">
+                            Product ID: {product.productId}
+                          </p>
+                        </div>
+                        <div className="flex justify-center pt-4">
+                          <Button 
+                            onClick={() => {
+                              const printWindow = window.open('', '_blank');
+                              const qrContent = document.getElementById(`qr-print-area-${product.id}`)?.innerHTML;
+                              printWindow?.document.write(`
+                                <html>
+                                  <head>
+                                    <title>QR Code - ${product.productName}</title>
+                                    <style>
+                                      body { 
+                                        font-family: Arial, sans-serif; 
+                                        text-align: center; 
+                                        margin: 50px;
+                                        background: white;
+                                      }
+                                      img { 
+                                        max-width: 300px; 
+                                        height: auto; 
+                                      }
+                                      .product-name {
+                                        font-size: 18px;
+                                        font-weight: bold;
+                                        margin: 20px 0 10px 0;
+                                        color: #000;
+                                      }
+                                      .product-id {
+                                        font-size: 14px;
+                                        color: #666;
+                                        margin-bottom: 20px;
+                                      }
+                                    </style>
+                                  </head>
+                                  <body>
+                                    <div class="qr-container">
+                                      <img src="${product.qrCodeUrl}" alt="QR Code" />
+                                      <div class="product-name">${product.productName}</div>
+                                      <div class="product-id">Product ID: ${product.productId}</div>
+                                    </div>
+                                  </body>
+                                </html>
+                              `);
+                              printWindow?.document.close();
+                              printWindow?.print();
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            data-testid={`button-print-qr-${product.id}`}
+                          >
+                            <i className="fas fa-print mr-2"></i>
+                            Print QR Code
+                          </Button>
                         </div>
                       </DialogContent>
                       </Dialog>
