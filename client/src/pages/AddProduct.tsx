@@ -22,6 +22,7 @@ const addProductSchema = z.object({
   size: z.string().min(1, "Size is required"),
   quantity: z.number().min(0, "Quantity must be 0 or greater"),
   price: z.number().min(0, "Price must be 0 or greater"),
+  manufacturer: z.string().optional(),
   category: z.string().optional(),
   description: z.string().optional(),
 });
@@ -42,6 +43,7 @@ export default function AddProduct() {
       size: "",
       quantity: 0,
       price: 0,
+      manufacturer: "",
       category: "",
       description: "",
     },
@@ -391,6 +393,30 @@ export default function AddProduct() {
                   )}
                 />
                 
+                <FormField
+                  control={form.control}
+                  name="manufacturer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium flex items-center gap-2">
+                        <i className="fas fa-industry text-muted-foreground"></i>
+                        Manufacturer (Optional)
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., Nike, Adidas, Zara" 
+                          {...field}
+                          data-testid="input-manufacturer"
+                          className="h-12 text-base"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
                   name="category"

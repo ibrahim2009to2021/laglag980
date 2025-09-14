@@ -50,6 +50,7 @@ export const products = pgTable("products", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   quantity: integer("quantity").notNull().default(0),
   size: varchar("size").notNull(),
+  manufacturer: varchar("manufacturer"),
   imageUrl: varchar("image_url"),
   qrCodeUrl: varchar("qr_code_url"),
   category: varchar("category"),

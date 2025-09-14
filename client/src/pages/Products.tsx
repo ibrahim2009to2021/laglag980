@@ -38,6 +38,7 @@ export default function Products() {
     size: z.string().min(1, "Size is required"),
     quantity: z.number().min(0, "Quantity must be 0 or greater"),
     price: z.number().min(0, "Price must be 0 or greater"),
+    manufacturer: z.string().optional(),
     category: z.string().optional(),
     description: z.string().optional(),
   });
@@ -52,6 +53,7 @@ export default function Products() {
       size: "",
       quantity: 0,
       price: 0,
+      manufacturer: "",
       category: "",
       description: "",
     },
@@ -522,6 +524,13 @@ export default function Products() {
                     <span className="text-sm text-muted-foreground">{product.color}</span>
                   </div>
                   
+                  {product.manufacturer && (
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground">Manufacturer:</span>
+                      <span className="text-xs font-medium text-foreground">{product.manufacturer}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm text-muted-foreground">Size: {product.size}</span>
                     {getStockBadge(product.quantity)}
@@ -547,6 +556,7 @@ export default function Products() {
                               size: product.size,
                               quantity: Number(product.quantity),
                               price: Number(product.price),
+                              manufacturer: product.manufacturer || "",
                               category: product.category || "none",
                               description: product.description || "",
                             });
@@ -681,6 +691,20 @@ export default function Products() {
                                         <SelectItem value="Accessories">Accessories</SelectItem>
                                       </SelectContent>
                                     </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={editForm.control}
+                                name="manufacturer"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Manufacturer</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="e.g., Nike, Adidas, Zara" />
+                                    </FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
