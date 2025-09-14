@@ -678,7 +678,11 @@ export default function Products() {
                       {deleteProductMutation.isPending ? (
                         <i className="fas fa-spinner fa-spin w-4 h-4"></i>
                       ) : (
-                        <i className="fas fa-trash w-4 h-4"></i>
+                        <img 
+                          src="/attached_assets/image_1757882941115.png" 
+                          alt="Delete" 
+                          className="w-4 h-4"
+                        />
                       )}
                     </Button>
                   </div>
