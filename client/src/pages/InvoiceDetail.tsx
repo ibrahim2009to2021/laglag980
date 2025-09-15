@@ -319,31 +319,64 @@ export default function InvoiceDetail() {
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">Invoice Items</h3>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Product</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Quantity</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Unit Price</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Total</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase min-w-[180px]">Product</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Color</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Size</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Manufacturer</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Qty</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Unit Price</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {invoice.items?.map((item: any, index: number) => (
                   <tr key={index} data-testid={`invoice-item-${index}`}>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 min-w-[180px]">
                       <div>
                         <p className="text-sm font-medium text-foreground">{item.product?.productName || 'Unknown Product'}</p>
-                        <p className="text-sm text-muted-foreground">{item.product?.productId}</p>
+                        <p className="text-xs text-muted-foreground">{item.product?.productId}</p>
+                        {item.product?.description && (
+                          <p className="text-xs text-muted-foreground mt-1 max-w-[160px] line-clamp-2" title={item.product.description}>
+                            {item.product.description}
+                          </p>
+                        )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-foreground">{item.quantity}</td>
-                    <td className="px-4 py-3 text-sm text-foreground">{formatCurrency(item.unitPrice)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-foreground">{formatCurrency(item.totalPrice)}</td>
+                    <td className="px-3 py-3">
+                      <span className="text-sm text-foreground">
+                        {item.product?.color || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-sm text-foreground">
+                        {item.product?.size || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-sm text-foreground">
+                        {item.product?.manufacturer || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      {item.product?.category ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          {item.product.category}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-sm text-foreground font-medium">{item.quantity}</td>
+                    <td className="px-3 py-3 text-sm text-foreground">{formatCurrency(item.unitPrice)}</td>
+                    <td className="px-3 py-3 text-sm font-medium text-foreground">{formatCurrency(item.totalPrice)}</td>
                   </tr>
                 )) || (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       No items found
                     </td>
                   </tr>
