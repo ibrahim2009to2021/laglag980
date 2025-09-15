@@ -4,21 +4,49 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useState } from "react";
 import { type Invoice, type InvoiceItem, type Product } from "@shared/schema";
+
+// Discount form schema
+const discountSchema = z.object({
+  discountPercentage: z.number().min(0, "Discount cannot be negative").max(100, "Discount cannot exceed 100%")
+});
+
+type DiscountForm = z.infer<typeof discountSchema>;
 
 export default function InvoiceDetail() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { id } = useParams();
+  const [isEditingDiscount, setIsEditingDiscount] = useState(false);
 
   const { data: invoice, isLoading, error } = useQuery<Invoice & { items: (InvoiceItem & { product: Product })[] }>({
     queryKey: [`/api/invoices/${id}`],
     enabled: !!id,
   });
+
+  const discountForm = useForm<DiscountForm>({
+    resolver: zodResolver(discountSchema),
+    defaultValues: {
+      discountPercentage: parseFloat(invoice?.discountPercentage || "0")
+    }
+  });
+
+  // Reset form when invoice data changes
+  if (invoice && !discountForm.formState.isDirty) {
+    discountForm.reset({
+      discountPercentage: parseFloat(invoice.discountPercentage || "0")
+    });
+  }
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
@@ -53,6 +81,52 @@ export default function InvoiceDetail() {
       });
     },
   });
+
+  const updateDiscountMutation = useMutation({
+    mutationFn: async (discountPercentage: number) => {
+      const response = await apiRequest("PUT", `/api/invoices/${id}/discount`, { discountPercentage });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Discount updated successfully",
+      });
+      setIsEditingDiscount(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/invoices/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized", 
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update discount",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmitDiscount = (data: DiscountForm) => {
+    updateDiscountMutation.mutate(data.discountPercentage);
+  };
+
+  const cancelDiscountEdit = () => {
+    setIsEditingDiscount(false);
+    discountForm.reset({
+      discountPercentage: parseFloat(invoice?.discountPercentage || "0")
+    });
+  };
 
   const downloadPDF = async (invoiceId: string, invoiceNumber: string) => {
     try {
@@ -92,8 +166,8 @@ export default function InvoiceDetail() {
     }, 100);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -283,20 +357,86 @@ export default function InvoiceDetail() {
       {/* Invoice Totals */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Invoice Summary</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Invoice Summary</h3>
+            {invoice.status === 'Pending' && !isEditingDiscount && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingDiscount(true)}
+                data-testid="button-edit-discount"
+              >
+                <i className="fas fa-edit w-4 h-4 mr-2"></i>
+                Edit Discount
+              </Button>
+            )}
+          </div>
           <div className="max-w-md ml-auto space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal:</span>
               <span className="font-medium text-foreground">{formatCurrency(invoice.subtotal || 0)}</span>
             </div>
-            {parseFloat(invoice.discountAmount || "0") > 0 && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Discount ({(parseFloat(invoice.discountPercentage || "0") * 100).toFixed(1)}%):
-                </span>
-                <span className="font-medium text-foreground">-{formatCurrency(invoice.discountAmount || 0)}</span>
-              </div>
+            
+            {/* Discount Section - Enhanced with editing capability */}
+            {invoice.status === 'Pending' && isEditingDiscount ? (
+              <form onSubmit={discountForm.handleSubmit(onSubmitDiscount)} className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="discount-percentage" className="text-sm text-muted-foreground min-w-fit">
+                    Discount (%):
+                  </Label>
+                  <Input
+                    id="discount-percentage"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    className="w-20 h-8 text-sm"
+                    {...discountForm.register("discountPercentage", { valueAsNumber: true })}
+                    data-testid="input-discount-percentage"
+                  />
+                  <div className="flex space-x-1">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={updateDiscountMutation.isPending}
+                      className="h-8 px-2"
+                      data-testid="button-save-discount"
+                    >
+                      {updateDiscountMutation.isPending ? (
+                        <i className="fas fa-spinner fa-spin w-3 h-3"></i>
+                      ) : (
+                        <i className="fas fa-check w-3 h-3"></i>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={cancelDiscountEdit}
+                      className="h-8 px-2"
+                      data-testid="button-cancel-discount"
+                    >
+                      <i className="fas fa-times w-3 h-3"></i>
+                    </Button>
+                  </div>
+                </div>
+                {discountForm.formState.errors.discountPercentage && (
+                  <p className="text-sm text-destructive">
+                    {discountForm.formState.errors.discountPercentage.message}
+                  </p>
+                )}
+              </form>
+            ) : (
+              parseFloat(invoice.discountAmount || "0") > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Discount ({(parseFloat(invoice.discountPercentage || "0") * 100).toFixed(1)}%):
+                  </span>
+                  <span className="font-medium text-foreground">-{formatCurrency(invoice.discountAmount || 0)}</span>
+                </div>
+              )
             )}
+            
             <div className="flex justify-between">
               <span className="text-muted-foreground">
                 Tax ({(parseFloat(invoice.taxRate || "0") * 100).toFixed(1)}%):

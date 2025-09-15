@@ -47,6 +47,7 @@ export interface IStorage {
   updateInvoicePdfPath(id: string, pdfPath: string): Promise<Invoice>;
   getInvoiceItems(invoiceId: string): Promise<(InvoiceItem & { product: Product })[]>;
   getInvoiceWithItems(id: string): Promise<(Invoice & { items: (InvoiceItem & { product: Product })[] }) | undefined>;
+  updateInvoiceDiscount(id: string, discountPercentage: number): Promise<Invoice>;
 
   // Activity log operations
   createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
@@ -86,13 +87,6 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
-  }
-
-  async updateUserLastLogin(id: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ lastLoginAt: new Date() })
-      .where(eq(users.id, id));
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -143,9 +137,6 @@ export class DatabaseStorage implements IStorage {
   async getAllProducts(options?: { limit?: number; offset?: number; search?: string; category?: string; size?: string; stockLevel?: string }): Promise<{ products: Product[]; total: number }> {
     const { limit = 50, offset = 0, search, category, size, stockLevel } = options || {};
     
-    let query = db.select().from(products);
-    let countQuery = db.select({ count: count() }).from(products);
-    
     const conditions = [eq(products.isActive, true)];
     
     if (search) {
@@ -165,15 +156,15 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${products.quantity} > 5`);
     }
     
-    if (conditions.length > 0) {
-      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
-      query = query.where(whereCondition);
-      countQuery = countQuery.where(whereCondition);
-    }
+    const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
     
     const [productsResult, totalResult] = await Promise.all([
-      query.orderBy(desc(products.createdAt)).limit(limit).offset(offset),
-      countQuery
+      db.select().from(products)
+        .where(whereCondition)
+        .orderBy(desc(products.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ count: count() }).from(products).where(whereCondition)
     ]);
     
     return {
@@ -250,9 +241,6 @@ export class DatabaseStorage implements IStorage {
   async getAllInvoices(options?: { limit?: number; offset?: number; status?: string; startDate?: string; endDate?: string }): Promise<{ invoices: Invoice[]; total: number }> {
     const { limit = 50, offset = 0, status, startDate, endDate } = options || {};
     
-    let query = db.select().from(invoices);
-    let countQuery = db.select({ count: count() }).from(invoices);
-    
     const conditions = [];
     
     if (status) {
@@ -265,15 +253,24 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${invoices.createdAt} <= ${endDate}`);
     }
     
-    if (conditions.length > 0) {
-      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
-      query = query.where(whereCondition);
-      countQuery = countQuery.where(whereCondition);
-    }
+    const whereCondition = conditions.length > 0 
+      ? (conditions.length === 1 ? conditions[0] : and(...conditions))
+      : undefined;
     
     const [invoicesResult, totalResult] = await Promise.all([
-      query.orderBy(desc(invoices.createdAt)).limit(limit).offset(offset),
-      countQuery
+      whereCondition
+        ? db.select().from(invoices)
+            .where(whereCondition)
+            .orderBy(desc(invoices.createdAt))
+            .limit(limit)
+            .offset(offset)
+        : db.select().from(invoices)
+            .orderBy(desc(invoices.createdAt))
+            .limit(limit)
+            .offset(offset),
+      whereCondition
+        ? db.select({ count: count() }).from(invoices).where(whereCondition)
+        : db.select({ count: count() }).from(invoices)
     ]);
     
     return {
@@ -363,6 +360,44 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async updateInvoiceDiscount(id: string, discountPercentage: number): Promise<Invoice> {
+    const [invoice] = await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.id, id));
+    
+    if (!invoice) {
+      throw new Error('Invoice not found');
+    }
+    
+    if (invoice.status !== 'Pending') {
+      throw new Error('Can only update discount for pending invoices');
+    }
+    
+    // Calculate new values based on discount percentage
+    const subtotal = parseFloat(invoice.subtotal);
+    const taxRate = parseFloat(invoice.taxRate || "0.085");
+    
+    const discountAmount = subtotal * (discountPercentage / 100);
+    const discountedSubtotal = subtotal - discountAmount;
+    const taxAmount = discountedSubtotal * taxRate;
+    const total = discountedSubtotal + taxAmount;
+    
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({
+        discountPercentage: discountPercentage.toString(),
+        discountAmount: discountAmount.toFixed(2),
+        taxAmount: taxAmount.toFixed(2),
+        total: total.toFixed(2),
+        updatedAt: new Date()
+      })
+      .where(eq(invoices.id, id))
+      .returning();
+    
+    return updatedInvoice;
+  }
+
   // Activity log operations
   async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
     const [newLog] = await db.insert(activityLogs).values(log).returning();
@@ -371,13 +406,6 @@ export class DatabaseStorage implements IStorage {
 
   async getActivityLogs(options?: { limit?: number; offset?: number; userId?: string; module?: string; startDate?: string; endDate?: string }): Promise<{ logs: (ActivityLog & { user: User | null })[]; total: number }> {
     const { limit = 50, offset = 0, userId, module, startDate, endDate } = options || {};
-    
-    let query = db
-      .select()
-      .from(activityLogs)
-      .leftJoin(users, eq(activityLogs.userId, users.id));
-    
-    let countQuery = db.select({ count: count() }).from(activityLogs);
     
     const conditions = [];
     
@@ -394,15 +422,28 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`${activityLogs.createdAt} <= ${endDate}`);
     }
     
-    if (conditions.length > 0) {
-      const whereCondition = conditions.length === 1 ? conditions[0] : and(...conditions);
-      query = query.where(whereCondition);
-      countQuery = countQuery.where(whereCondition);
-    }
+    const whereCondition = conditions.length > 0 
+      ? (conditions.length === 1 ? conditions[0] : and(...conditions))
+      : undefined;
     
     const [logsResult, totalResult] = await Promise.all([
-      query.orderBy(desc(activityLogs.createdAt)).limit(limit).offset(offset),
-      countQuery
+      whereCondition
+        ? db.select()
+            .from(activityLogs)
+            .leftJoin(users, eq(activityLogs.userId, users.id))
+            .where(whereCondition)
+            .orderBy(desc(activityLogs.createdAt))
+            .limit(limit)
+            .offset(offset)
+        : db.select()
+            .from(activityLogs)
+            .leftJoin(users, eq(activityLogs.userId, users.id))
+            .orderBy(desc(activityLogs.createdAt))
+            .limit(limit)
+            .offset(offset),
+      whereCondition
+        ? db.select({ count: count() }).from(activityLogs).where(whereCondition)
+        : db.select({ count: count() }).from(activityLogs)
     ]);
     
     const logs = logsResult.map(row => ({

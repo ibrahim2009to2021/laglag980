@@ -736,6 +736,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/invoices/:id/discount", isAuthenticated, async (req: any, res) => {
+    try {
+      const { discountPercentage } = req.body;
+      
+      // Validate discount percentage
+      const discountSchema = z.object({
+        discountPercentage: z.number().min(0).max(100)
+      });
+      
+      const { discountPercentage: validatedDiscount } = discountSchema.parse({ discountPercentage });
+      
+      const invoice = await storage.updateInvoiceDiscount(req.params.id, validatedDiscount);
+      
+      await logActivity(req, `Updated invoice ${invoice.invoiceNumber} discount to ${validatedDiscount}%`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      
+      res.json(invoice);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid discount percentage", errors: error.errors });
+      }
+      console.error("Error updating invoice discount:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to update invoice discount" });
+    }
+  });
+
   app.post("/api/invoices/:id/pdf", isAuthenticated, async (req: any, res) => {
     try {
       const invoice = await storage.getInvoiceWithItems(req.params.id);
