@@ -39,8 +39,12 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <i className="fas fa-tshirt text-primary-foreground text-lg"></i>
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <img 
+                src="/attached_assets/image_1757421254360.png" 
+                alt="Volume Fashion Logo" 
+                className="w-8 h-8 rounded-md object-cover"
+              />
             </div>
             <div>
               <h1 className="text-lg font-semibold text-foreground">Volume Fashion</h1>
