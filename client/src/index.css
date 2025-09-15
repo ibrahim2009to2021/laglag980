@@ -1,3 +1,9 @@
+/* Font Awesome Icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* Uppy Styles for Object Uploader */
+@import url('https://releases.transloadit.com/uppy/v3.3.1/uppy.min.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -107,12 +113,6 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
-
-/* Font Awesome Icons */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-
-/* Uppy Styles for Object Uploader */
-@import url('https://releases.transloadit.com/uppy/v3.3.1/uppy.min.css');
 
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
