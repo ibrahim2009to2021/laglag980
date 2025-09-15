@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type Invoice, type InvoiceItem, type Product } from "@shared/schema";
 
 // Discount form schema
@@ -37,16 +37,19 @@ export default function InvoiceDetail() {
   const discountForm = useForm<DiscountForm>({
     resolver: zodResolver(discountSchema),
     defaultValues: {
-      discountPercentage: parseFloat(invoice?.discountPercentage || "0")
+      discountPercentage: 0
     }
   });
 
-  // Reset form when invoice data changes
-  if (invoice && !discountForm.formState.isDirty) {
-    discountForm.reset({
-      discountPercentage: parseFloat(invoice.discountPercentage || "0")
-    });
-  }
+  // Reset form when invoice data changes - using useEffect to prevent re-render loops
+  useEffect(() => {
+    if (invoice && !discountForm.formState.isDirty) {
+      const currentDiscountPercentage = parseFloat(invoice.discountPercentage || "0");
+      discountForm.reset({
+        discountPercentage: currentDiscountPercentage
+      });
+    }
+  }, [invoice?.discountPercentage, discountForm.formState.isDirty]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
@@ -123,9 +126,11 @@ export default function InvoiceDetail() {
 
   const cancelDiscountEdit = () => {
     setIsEditingDiscount(false);
-    discountForm.reset({
-      discountPercentage: parseFloat(invoice?.discountPercentage || "0")
-    });
+    if (invoice) {
+      discountForm.reset({
+        discountPercentage: parseFloat(invoice.discountPercentage || "0")
+      });
+    }
   };
 
   const downloadPDF = async (invoiceId: string, invoiceNumber: string) => {
