@@ -87,7 +87,25 @@ export default function InvoiceDetail() {
 
   const updateDiscountMutation = useMutation({
     mutationFn: async (discountPercentage: number) => {
-      const response = await apiRequest("PUT", `/api/invoices/${id}/discount`, { discountPercentage });
+      console.log("Making API request with discount percentage:", discountPercentage, typeof discountPercentage);
+      
+      const requestBody = { discountPercentage };
+      console.log("Request body:", requestBody);
+      
+      const response = await apiRequest("PUT", `/api/invoices/${id}/discount`, requestBody);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API error response:", response.status, errorText);
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText || `HTTP ${response.status}` };
+        }
+        throw { response: errorData, status: response.status };
+      }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -100,7 +118,9 @@ export default function InvoiceDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Discount update error:", error);
+      
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized", 
@@ -112,16 +132,60 @@ export default function InvoiceDetail() {
         }, 500);
         return;
       }
+      
+      // Try to extract specific error message from API response
+      let errorMessage = "Failed to update discount";
+      try {
+        if (error.response) {
+          const responseData = error.response;
+          if (responseData.message) {
+            errorMessage = responseData.message;
+          } else if (responseData.errors && responseData.errors.length > 0) {
+            errorMessage = responseData.errors[0].message || errorMessage;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+      } catch (parseError) {
+        console.error("Error parsing error message:", parseError);
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to update discount",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
   const onSubmitDiscount = (data: DiscountForm) => {
-    updateDiscountMutation.mutate(data.discountPercentage);
+    console.log("Form submission data:", data);
+    console.log("discountPercentage type:", typeof data.discountPercentage);
+    console.log("discountPercentage value:", data.discountPercentage);
+    
+    // Ensure it's a number for the API call
+    const numericDiscountPercentage = Number(data.discountPercentage);
+    console.log("Converted to number:", numericDiscountPercentage, typeof numericDiscountPercentage);
+    
+    if (isNaN(numericDiscountPercentage)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid discount percentage",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (numericDiscountPercentage < 0 || numericDiscountPercentage > 100) {
+      toast({
+        title: "Error",
+        description: "Discount percentage must be between 0 and 100",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateDiscountMutation.mutate(numericDiscountPercentage);
   };
 
   const cancelDiscountEdit = () => {
