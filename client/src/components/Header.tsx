@@ -54,7 +54,11 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
               className="w-40 lg:w-64 pl-10"
               data-testid="input-search"
             />
-            <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"></i>
+            <img 
+              src="/attached_assets/image_1757965266687.png" 
+              alt="Search" 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+            />
           </div>
 
           {/* Notifications */}
