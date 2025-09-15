@@ -280,7 +280,7 @@ export default function InvoiceDetail() {
             <Button
               onClick={() => updateStatusMutation.mutate('Processed')}
               disabled={updateStatusMutation.isPending}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
               data-testid="button-process-invoice"
             >
               <i className="fas fa-check w-4 h-4 mr-2"></i>
@@ -437,7 +437,7 @@ export default function InvoiceDetail() {
                       type="submit"
                       size="sm"
                       disabled={updateDiscountMutation.isPending}
-                      className="h-8 px-2"
+                      className="h-8 px-2 bg-blue-600 hover:bg-blue-700 text-white"
                       data-testid="button-save-discount"
                     >
                       {updateDiscountMutation.isPending ? (
