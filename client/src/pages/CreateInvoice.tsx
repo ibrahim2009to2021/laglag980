@@ -335,7 +335,7 @@ export default function CreateInvoice() {
                       </DialogHeader>
                       <div className="max-h-96 overflow-y-auto">
                         {(productsData as any)?.products?.length ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {(productsData as any).products.map((product: any) => (
                               <Card 
                                 key={product.id} 
@@ -346,28 +346,93 @@ export default function CreateInvoice() {
                                 data-testid={`product-option-${product.id}`}
                               >
                                 <CardContent className="p-4">
-                                  <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                      {product.imageUrl ? (
-                                        <img 
-                                          src={product.imageUrl} 
-                                          alt={product.productName} 
-                                          className="w-12 h-12 rounded-md object-cover"
-                                        />
-                                      ) : (
-                                        <i className="fas fa-image text-muted-foreground"></i>
-                                      )}
+                                  <div className="flex space-x-4">
+                                    <div className="flex-shrink-0">
+                                      <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center">
+                                        {product.imageUrl ? (
+                                          <img 
+                                            src={product.imageUrl} 
+                                            alt={product.productName} 
+                                            className="w-16 h-16 rounded-md object-cover"
+                                          />
+                                        ) : (
+                                          <i className="fas fa-image text-muted-foreground text-lg"></i>
+                                        )}
+                                      </div>
                                     </div>
-                                    <div className="flex-1">
-                                      <h5 className="font-medium text-foreground">{product.productName}</h5>
-                                      <p className="text-sm text-muted-foreground">
-                                        {product.productId} • Size: {product.size} • {formatCurrency(product.price)}
-                                      </p>
-                                      <Badge variant="secondary">{product.quantity} in stock</Badge>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex-1 min-w-0">
+                                          <h5 className="font-semibold text-foreground truncate" data-testid={`product-name-${product.id}`}>
+                                            {product.productName}
+                                          </h5>
+                                          <p className="text-sm text-muted-foreground mb-2" data-testid={`product-id-${product.id}`}>
+                                            ID: {product.productId}
+                                          </p>
+                                        </div>
+                                        {selectedProducts.has(product.id) && (
+                                          <i className="fas fa-check text-accent ml-2 flex-shrink-0"></i>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Product attributes */}
+                                      <div className="space-y-2">
+                                        <div className="flex flex-wrap gap-2">
+                                          <Badge variant="outline" className="text-xs" data-testid={`product-size-${product.id}`}>
+                                            Size: {product.size}
+                                          </Badge>
+                                          {product.color && (
+                                            <Badge variant="outline" className="text-xs flex items-center gap-1" data-testid={`product-color-${product.id}`}>
+                                              <div 
+                                                className="w-3 h-3 rounded-full border border-gray-300"
+                                                style={{ backgroundColor: product.color.toLowerCase() }}
+                                                title={product.color}
+                                              ></div>
+                                              {product.color}
+                                            </Badge>
+                                          )}
+                                          {product.manufacturer && (
+                                            <Badge variant="secondary" className="text-xs" data-testid={`product-manufacturer-${product.id}`}>
+                                              {product.manufacturer}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        
+                                        {product.category && (
+                                          <div className="flex items-center gap-1">
+                                            <i className="fas fa-tag text-muted-foreground text-xs"></i>
+                                            <span className="text-xs text-muted-foreground" data-testid={`product-category-${product.id}`}>
+                                              {product.category}
+                                            </span>
+                                          </div>
+                                        )}
+                                        
+                                        {product.description && (
+                                          <p className="text-xs text-muted-foreground line-clamp-2" 
+                                             title={product.description}
+                                             data-testid={`product-description-${product.id}`}>
+                                            {product.description.length > 80 
+                                              ? product.description.substring(0, 80) + '...' 
+                                              : product.description}
+                                          </p>
+                                        )}
+                                        
+                                        <div className="flex items-center justify-between pt-1">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-foreground" data-testid={`product-price-${product.id}`}>
+                                              {formatCurrency(product.price)}
+                                            </span>
+                                            <Badge 
+                                              variant={product.quantity > 10 ? "secondary" : product.quantity > 0 ? "outline" : "destructive"}
+                                              className="text-xs"
+                                              data-testid={`product-stock-${product.id}`}
+                                            >
+                                              {product.quantity} in stock
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
-                                    {selectedProducts.has(product.id) && (
-                                      <i className="fas fa-check text-accent"></i>
-                                    )}
                                   </div>
                                 </CardContent>
                               </Card>
