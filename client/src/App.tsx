@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import LoginPage from "@/pages/LoginPage";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -14,7 +16,12 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={LoginPage} />
+        <>
+          <Route path="/" component={LoginPage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/reset-password" component={ResetPassword} />
+        </>
       ) : (
         <>
           <Route path="/" component={() => <Layout page="dashboard" />} />
