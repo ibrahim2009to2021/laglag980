@@ -1,14 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupCustomAuth, isAuthenticated } from "./customAuth";
+import { setupCustomAuth, isAuthenticated, hashPassword } from "./customAuth";
 import passport from "passport";
 import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertProductSchema, insertInvoiceSchema, insertInvoiceItemSchema, insertActivityLogSchema } from "@shared/schema";
 import { z } from "zod";
 import QRCode from "qrcode";
-import { randomUUID } from "crypto";
+import { randomUUID, randomBytes, createHash } from "crypto";
 import nodemailer from "nodemailer";
 import PDFDocument from "pdfkit";
 import multer from "multer";
@@ -273,6 +273,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Logout successful" });
     });
+  });
+
+  // Password reset routes
+  app.post('/api/auth/password/forgot', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Always return success to prevent user enumeration
+      const genericMessage = "If an account with that email exists, you will receive a password reset link.";
+      
+      const user = await storage.getUserByEmail(email);
+      if (user) {
+        // Generate secure token
+        const token = randomBytes(32).toString('hex');
+        const tokenHash = createHash('sha256').update(token).digest('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        
+        // Store token hash
+        await storage.createPasswordResetToken(user.id, tokenHash, expiresAt);
+        
+        // Send email
+        const transporter = createEmailTransporter();
+        const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
+        
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER || 'noreply@volumefashion.com',
+          to: email,
+          subject: 'Volume Fashion - Password Reset Request',
+          html: `
+            <h2>Password Reset Request</h2>
+            <p>You requested a password reset for your Volume Fashion account.</p>
+            <p>Click the link below to reset your password:</p>
+            <p><a href="${resetLink}" style="color: #007bff; text-decoration: none;">Reset Password</a></p>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+            <p>Best regards,<br>Volume Fashion Team</p>
+          `
+        });
+      }
+      
+      res.json({ message: genericMessage });
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ message: "Failed to process request" });
+    }
+  });
+
+  app.post('/api/auth/password/validate', async (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+
+      const tokenHash = createHash('sha256').update(token).digest('hex');
+      const resetToken = await storage.findValidPasswordResetTokenByHash(tokenHash);
+      
+      if (resetToken) {
+        res.json({ valid: true });
+      } else {
+        res.json({ valid: false });
+      }
+    } catch (error) {
+      console.error("Token validation error:", error);
+      res.status(500).json({ message: "Failed to validate token" });
+    }
+  });
+
+  app.post('/api/auth/password/reset', async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+
+      const tokenHash = createHash('sha256').update(token).digest('hex');
+      const resetToken = await storage.findValidPasswordResetTokenByHash(tokenHash);
+      
+      if (!resetToken) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      // Hash the new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+      
+      // Mark token as used
+      await storage.markPasswordResetTokenUsed(resetToken.id);
+      
+      res.json({ message: "Password reset successful" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
   });
 
   app.get('/api/auth/user', (req: any, res) => {
