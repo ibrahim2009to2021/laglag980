@@ -138,6 +138,17 @@ export default function LoginPage() {
                     </>
                   )}
                 </Button>
+
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = '/forgot-password'}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    data-testid="link-forgot-password"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
               </form>
             </Form>
 
