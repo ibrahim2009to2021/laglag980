@@ -762,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Invoice routes
   app.get("/api/invoices", isAuthenticated, async (req, res) => {
     try {
-      const { page = "1", limit = "20", status, startDate, endDate } = req.query;
+      const { page = "1", limit = "20", status, startDate, endDate, customerName } = req.query;
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
       
       const result = await storage.getAllInvoices({
@@ -770,7 +770,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset,
         status: status as string,
         startDate: startDate as string,
-        endDate: endDate as string
+        endDate: endDate as string,
+        customerName: customerName as string
       });
       
       res.json(result);

@@ -52,7 +52,7 @@ export interface IStorage {
   // Invoice operations
   createInvoice(invoice: InsertInvoice, items: InsertInvoiceItem[]): Promise<Invoice>;
   getInvoice(id: string): Promise<Invoice | undefined>;
-  getAllInvoices(options?: { limit?: number; offset?: number; status?: string; startDate?: string; endDate?: string }): Promise<{ invoices: Invoice[]; total: number }>;
+  getAllInvoices(options?: { limit?: number; offset?: number; status?: string; startDate?: string; endDate?: string; customerName?: string }): Promise<{ invoices: Invoice[]; total: number }>;
   updateInvoiceStatus(id: string, status: string, processedBy?: string): Promise<Invoice>;
   updateInvoicePdfPath(id: string, pdfPath: string): Promise<Invoice>;
   getInvoiceItems(invoiceId: string): Promise<(InvoiceItem & { product: Product })[]>;
@@ -292,8 +292,8 @@ export class DatabaseStorage implements IStorage {
     return invoice;
   }
 
-  async getAllInvoices(options?: { limit?: number; offset?: number; status?: string; startDate?: string; endDate?: string }): Promise<{ invoices: Invoice[]; total: number }> {
-    const { limit = 50, offset = 0, status, startDate, endDate } = options || {};
+  async getAllInvoices(options?: { limit?: number; offset?: number; status?: string; startDate?: string; endDate?: string; customerName?: string }): Promise<{ invoices: Invoice[]; total: number }> {
+    const { limit = 50, offset = 0, status, startDate, endDate, customerName } = options || {};
     
     const conditions = [];
     
@@ -305,6 +305,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (endDate) {
       conditions.push(sql`${invoices.createdAt} <= ${endDate}`);
+    }
+    if (customerName) {
+      conditions.push(ilike(invoices.customerName, `%${customerName}%`));
     }
     
     const whereCondition = conditions.length > 0 

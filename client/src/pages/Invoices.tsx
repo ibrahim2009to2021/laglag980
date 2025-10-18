@@ -19,7 +19,8 @@ export default function Invoices() {
   const [filters, setFilters] = useState({
     status: "",
     startDate: "",
-    endDate: ""
+    endDate: "",
+    customerName: ""
   });
 
   const { data: invoicesData, isLoading, error } = useQuery({
@@ -215,6 +216,15 @@ export default function Invoices() {
             className="w-full sm:w-40"
             placeholder="Date to"
             data-testid="input-end-date"
+          />
+          
+          <Input
+            type="text"
+            value={filters.customerName}
+            onChange={(e) => handleFilterChange("customerName", e.target.value)}
+            className="w-full sm:w-48"
+            placeholder="Search by customer name"
+            data-testid="input-customer-name"
           />
         </div>
 
