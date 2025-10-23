@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { BrowserQRCodeReader, BrowserBarcodeReader } from "@zxing/library";
 
 const createInvoiceSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
@@ -46,6 +47,8 @@ export default function CreateInvoice() {
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [isScanning, setIsScanning] = useState(false);
+  const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<CreateInvoiceForm>({
     resolver: zodResolver(createInvoiceSchema),
@@ -172,6 +175,85 @@ export default function CreateInvoice() {
       newSet.delete(item.productId);
       return newSet;
     });
+  };
+
+  const handleBarcodeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    try {
+      // Create an image element to load the file
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        img.src = e.target?.result as string;
+        img.onload = async () => {
+          try {
+            // Try both QR code and barcode readers
+            let decodedText = null;
+            
+            // First try QR code reader
+            try {
+              const qrCodeReader = new BrowserQRCodeReader();
+              const result = await qrCodeReader.decodeFromImageElement(img);
+              decodedText = result.getText();
+            } catch (qrError) {
+              // If QR fails, try barcode reader
+              const barcodeReader = new BrowserBarcodeReader();
+              const result = await barcodeReader.decodeFromImageElement(img);
+              decodedText = result.getText();
+            }
+
+            if (decodedText) {
+              // Look up the product by productId
+              const response = await fetch(`/api/products/by-product-id/${decodedText}`, {
+                credentials: 'include'
+              });
+
+              if (response.ok) {
+                const product = await response.json();
+                addProductToInvoice(product);
+                toast({
+                  title: "Success",
+                  description: `Product "${product.productName}" added from barcode`,
+                });
+              } else {
+                toast({
+                  title: "Product Not Found",
+                  description: `No product found with barcode: ${decodedText}`,
+                  variant: "destructive",
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Barcode scanning error:", error);
+            toast({
+              title: "Scanning Failed",
+              description: "Could not read barcode from image. Please try again with a clearer image.",
+              variant: "destructive",
+            });
+          } finally {
+            setIsScanning(false);
+            // Reset the file input
+            if (barcodeInputRef.current) {
+              barcodeInputRef.current.value = '';
+            }
+          }
+        };
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("File reading error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to read the image file",
+        variant: "destructive",
+      });
+      setIsScanning(false);
+    }
   };
 
   const calculateTotals = () => {
@@ -317,13 +399,41 @@ export default function CreateInvoice() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-sm font-medium text-foreground">Invoice Items</h4>
-                  <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                    <DialogTrigger asChild>
-                      <Button type="button" data-testid="button-add-product">
-                        <i className="fas fa-plus mr-2"></i>
-                        Add Product
-                      </Button>
-                    </DialogTrigger>
+                  <div className="flex gap-2">
+                    <input
+                      ref={barcodeInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBarcodeUpload}
+                      className="hidden"
+                      data-testid="input-barcode-file"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => barcodeInputRef.current?.click()}
+                      disabled={isScanning}
+                      data-testid="button-scan-barcode"
+                    >
+                      {isScanning ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin mr-2"></i>
+                          Scanning...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-barcode mr-2"></i>
+                          Scan Barcode
+                        </>
+                      )}
+                    </Button>
+                    <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
+                      <DialogTrigger asChild>
+                        <Button type="button" data-testid="button-add-product">
+                          <i className="fas fa-plus mr-2"></i>
+                          Add Product
+                        </Button>
+                      </DialogTrigger>
                     <DialogContent className="sm:max-w-4xl">
                       <DialogHeader>
                         <DialogTitle>Select Products</DialogTitle>
@@ -443,8 +553,9 @@ export default function CreateInvoice() {
                     </DialogContent>
                   </Dialog>
                 </div>
+              </div>
 
-                {/* Invoice Items Table */}
+              {/* Invoice Items Table */}
                 <div className="bg-background border border-input rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-muted">
