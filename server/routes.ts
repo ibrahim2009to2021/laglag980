@@ -447,6 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // More specific routes must come before generic ones
   app.get("/api/products/by-product-id/:productId", isAuthenticated, async (req, res) => {
     try {
       const product = await storage.getProductByProductId(req.params.productId);
