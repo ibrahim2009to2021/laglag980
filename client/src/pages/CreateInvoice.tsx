@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { BrowserQRCodeReader, BrowserBarcodeReader } from "@zxing/library";
+import Tesseract from "tesseract.js";
 
 const createInvoiceSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
@@ -191,19 +192,46 @@ export default function CreateInvoice() {
         img.src = e.target?.result as string;
         img.onload = async () => {
           try {
-            // Try both QR code and barcode readers
             let decodedText = null;
+            let scanMethod = "";
             
             // First try QR code reader
             try {
               const qrCodeReader = new BrowserQRCodeReader();
               const result = await qrCodeReader.decodeFromImageElement(img);
               decodedText = result.getText();
+              scanMethod = "QR code";
             } catch (qrError) {
               // If QR fails, try barcode reader
-              const barcodeReader = new BrowserBarcodeReader();
-              const result = await barcodeReader.decodeFromImageElement(img);
-              decodedText = result.getText();
+              try {
+                const barcodeReader = new BrowserBarcodeReader();
+                const result = await barcodeReader.decodeFromImageElement(img);
+                decodedText = result.getText();
+                scanMethod = "barcode";
+              } catch (barcodeError) {
+                // If both barcode readers fail, try OCR to read text under barcode
+                try {
+                  const { data: { text } } = await Tesseract.recognize(
+                    img,
+                    'eng',
+                    {
+                      logger: (m) => console.log('OCR Progress:', m)
+                    }
+                  );
+                  
+                  // Extract product ID from OCR text (clean up whitespace and get numbers)
+                  const cleanedText = text.trim().replace(/\s+/g, '');
+                  // Look for patterns like product IDs (alphanumeric sequences)
+                  const productIdMatch = cleanedText.match(/[A-Z0-9]{3,}/i);
+                  
+                  if (productIdMatch) {
+                    decodedText = productIdMatch[0];
+                    scanMethod = "OCR";
+                  }
+                } catch (ocrError) {
+                  console.error("OCR error:", ocrError);
+                }
+              }
             }
 
             if (decodedText) {
@@ -217,21 +245,27 @@ export default function CreateInvoice() {
                 addProductToInvoice(product);
                 toast({
                   title: "Success",
-                  description: `Product "${product.productName}" added from barcode`,
+                  description: `Product "${product.productName}" added via ${scanMethod}`,
                 });
               } else {
                 toast({
                   title: "Product Not Found",
-                  description: `No product found with barcode: ${decodedText}`,
+                  description: `No product found with ID: ${decodedText}`,
                   variant: "destructive",
                 });
               }
+            } else {
+              toast({
+                title: "Scanning Failed",
+                description: "Could not read barcode or text from image. Please try again with a clearer image.",
+                variant: "destructive",
+              });
             }
           } catch (error) {
-            console.error("Barcode scanning error:", error);
+            console.error("Scanning error:", error);
             toast({
               title: "Scanning Failed",
-              description: "Could not read barcode from image. Please try again with a clearer image.",
+              description: "An error occurred while processing the image.",
               variant: "destructive",
             });
           } finally {
