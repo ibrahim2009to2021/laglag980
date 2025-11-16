@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { ProductsResponse, Product } from "@shared/schema";
+import ObjectUploader from "@/components/ObjectUploader";
 
 export default function Products() {
   const { toast } = useToast();
@@ -32,6 +33,7 @@ export default function Products() {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [bulkUploadFile, setBulkUploadFile] = useState<File | null>(null);
+  const [editImageUrl, setEditImageUrl] = useState<string>("");
 
   const editProductSchema = z.object({
     productName: z.string().min(1, "Product name is required"),
@@ -61,7 +63,7 @@ export default function Products() {
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: async (data: EditProductForm & { id: string }) => {
+    mutationFn: async (data: EditProductForm & { id: string; imageUrl?: string }) => {
       // Convert comma-separated color string to array
       const colorArray = data.color.split(',').map(c => c.trim()).filter(c => c.length > 0);
       
@@ -70,7 +72,14 @@ export default function Products() {
         color: colorArray,
         price: data.price.toString(),
       });
-      return response.json();
+      const product = await response.json();
+      
+      // If image was uploaded, update the product image
+      if (data.imageUrl) {
+        await apiRequest("PUT", `/api/products/${data.id}/image`, { imageUrl: data.imageUrl });
+      }
+      
+      return product;
     },
     onSuccess: () => {
       toast({
@@ -80,6 +89,7 @@ export default function Products() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
       setSelectedProduct(null);
+      setEditImageUrl("");
       editForm.reset();
     },
     onError: (error) => {
@@ -523,6 +533,7 @@ export default function Products() {
                     <Dialog open={selectedProduct?.id === product.id} onOpenChange={(open) => {
                       if (!open) {
                         setSelectedProduct(null);
+                        setEditImageUrl("");
                         editForm.reset();
                       }
                     }}>
@@ -554,7 +565,7 @@ export default function Products() {
                           <DialogTitle>Edit Product - {product.productName}</DialogTitle>
                         </DialogHeader>
                         <Form {...editForm}>
-                          <form onSubmit={editForm.handleSubmit((data) => updateProductMutation.mutate({ ...data, id: product.id }))} className="space-y-4">
+                          <form onSubmit={editForm.handleSubmit((data) => updateProductMutation.mutate({ ...data, id: product.id, imageUrl: editImageUrl }))} className="space-y-4">
                             <div className="grid grid-cols-1 gap-4">
                               <FormField
                                 control={editForm.control}
@@ -719,12 +730,40 @@ export default function Products() {
                               />
                             </div>
                             
+                            {/* Image Upload */}
+                            <div className="border-t pt-4">
+                              <div className="mb-2">
+                                <label className="text-sm font-medium text-foreground">
+                                  Update Product Image (Optional)
+                                </label>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Upload a new image to replace the current one
+                                </p>
+                              </div>
+                              {product.imageUrl && !editImageUrl && (
+                                <div className="mb-3">
+                                  <p className="text-xs text-muted-foreground mb-2">Current Image:</p>
+                                  <img 
+                                    src={product.imageUrl} 
+                                    alt="Current product" 
+                                    className="w-24 h-24 object-cover rounded border"
+                                  />
+                                </div>
+                              )}
+                              <ObjectUploader
+                                onUploadComplete={(url) => setEditImageUrl(url)}
+                                buttonText={editImageUrl ? "Image Selected" : "Choose New Image"}
+                                accept="image/*"
+                              />
+                            </div>
+                            
                             <div className="flex items-center justify-end space-x-2 pt-4">
                               <Button 
                                 type="button" 
                                 variant="outline"
                                 onClick={() => {
                                   setSelectedProduct(null);
+                                  setEditImageUrl("");
                                   editForm.reset();
                                 }}
                               >

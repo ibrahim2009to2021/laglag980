@@ -228,10 +228,10 @@ export default function CreateInvoice() {
                     }
                   );
                   
-                  // Extract product ID from OCR text (clean up whitespace and get numbers)
+                  // Extract product ID from OCR text (preserve hyphens, remove other whitespace)
                   const cleanedText = text.trim().replace(/\s+/g, '');
-                  // Look for patterns like product IDs (alphanumeric sequences)
-                  const productIdMatch = cleanedText.match(/[A-Z0-9]{3,}/i);
+                  // Look for patterns like product IDs (alphanumeric sequences with optional hyphens)
+                  const productIdMatch = cleanedText.match(/[A-Z0-9][-A-Z0-9]{2,}/i);
                   
                   if (productIdMatch) {
                     decodedText = productIdMatch[0];
