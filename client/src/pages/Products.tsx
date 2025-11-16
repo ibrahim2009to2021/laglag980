@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { ProductsResponse, Product } from "@shared/schema";
-import ObjectUploader from "@/components/ObjectUploader";
+import { ObjectUploader } from "@/components/ObjectUploader";
 
 export default function Products() {
   const { toast } = useToast();
@@ -171,6 +171,41 @@ export default function Products() {
       style: 'currency',
       currency: 'USD'
     }).format(typeof price === 'string' ? parseFloat(price) : price);
+  };
+
+  const handleGetUploadParameters = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/objects/upload");
+      const data = await response.json();
+      return {
+        method: "PUT" as const,
+        url: data.uploadURL,
+      };
+    } catch (error) {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        throw error;
+      }
+      throw new Error("Failed to get upload URL");
+    }
+  };
+
+  const handleUploadComplete = (result: any) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      setEditImageUrl(uploadedFile.uploadURL);
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    }
   };
 
   const downloadTemplate = () => {
@@ -754,10 +789,14 @@ export default function Products() {
                                 </div>
                               )}
                               <ObjectUploader
-                                onUploadComplete={(url) => setEditImageUrl(url)}
-                                buttonText={editImageUrl ? "Image Selected" : "Choose New Image"}
-                                accept="image/*"
-                              />
+                                maxNumberOfFiles={1}
+                                maxFileSize={10485760}
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={handleUploadComplete}
+                                buttonClassName="w-full"
+                              >
+                                {editImageUrl ? "✓ Image Selected" : "Choose New Image"}
+                              </ObjectUploader>
                             </div>
                             
                             <div className="flex items-center justify-end space-x-2 pt-4">
