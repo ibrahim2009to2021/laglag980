@@ -193,22 +193,33 @@ export default function CreateInvoice() {
             let decodedText = null;
             let scanMethod = "";
             
-            // First try QR code reader
+            // Step 1: Try QR code reader first
             try {
               const qrCodeReader = new BrowserQRCodeReader();
               const result = await qrCodeReader.decodeFromImageElement(img);
               decodedText = result.getText();
-              scanMethod = "QR code";
+              scanMethod = "QR code scan";
+              console.log("✓ QR code successfully read:", decodedText);
             } catch (qrError) {
-              // If QR fails, try barcode reader
+              console.log("✗ QR code not readable, trying barcode...");
+              
+              // Step 2: If QR fails, try to read the barcode itself
               try {
                 const barcodeReader = new BrowserBarcodeReader();
                 const result = await barcodeReader.decodeFromImageElement(img);
                 decodedText = result.getText();
-                scanMethod = "barcode";
+                scanMethod = "barcode scan";
+                console.log("✓ Barcode successfully read:", decodedText);
               } catch (barcodeError) {
-                // If both barcode readers fail, try OCR to read text under barcode
+                console.log("✗ Barcode not readable, trying OCR for product ID text...");
+                
+                // Step 3: If barcode is not readable, use OCR to read the product ID text printed under the barcode
                 try {
+                  toast({
+                    title: "Reading product ID...",
+                    description: "Barcode not readable, scanning product ID text underneath",
+                  });
+                  
                   const { data: { text } } = await Tesseract.recognize(
                     img,
                     'eng',
@@ -224,10 +235,13 @@ export default function CreateInvoice() {
                   
                   if (productIdMatch) {
                     decodedText = productIdMatch[0];
-                    scanMethod = "OCR";
+                    scanMethod = "OCR text recognition (product ID under barcode)";
+                    console.log("✓ Product ID text successfully read via OCR:", decodedText);
+                  } else {
+                    console.log("✗ No product ID found in OCR text");
                   }
                 } catch (ocrError) {
-                  console.error("OCR error:", ocrError);
+                  console.error("✗ OCR error:", ocrError);
                 }
               }
             }
