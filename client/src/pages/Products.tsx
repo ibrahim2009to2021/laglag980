@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -34,8 +35,8 @@ export default function Products() {
 
   const editProductSchema = z.object({
     productName: z.string().min(1, "Product name is required"),
-    color: z.string().min(1, "Color is required"),
-    size: z.string().min(1, "Size is required"),
+    color: z.string().min(1, "At least one color is required"),
+    size: z.array(z.string()).min(1, "At least one size is required"),
     quantity: z.number().min(0, "Quantity must be 0 or greater"),
     price: z.number().min(0, "Price must be 0 or greater"),
     manufacturer: z.string().optional(),
@@ -50,7 +51,7 @@ export default function Products() {
     defaultValues: {
       productName: "",
       color: "",
-      size: "",
+      size: [],
       quantity: 0,
       price: 0,
       manufacturer: "",
@@ -61,8 +62,12 @@ export default function Products() {
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: EditProductForm & { id: string }) => {
+      // Convert comma-separated color string to array
+      const colorArray = data.color.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      
       const response = await apiRequest("PUT", `/api/products/${data.id}`, {
         ...data,
+        color: colorArray,
         price: data.price.toString(),
       });
       return response.json();
@@ -553,8 +558,8 @@ export default function Products() {
                             setSelectedProduct(product);
                             editForm.reset({
                               productName: product.productName,
-                              color: product.color,
-                              size: product.size,
+                              color: Array.isArray(product.color) ? product.color.join(', ') : product.color,
+                              size: Array.isArray(product.size) ? product.size : [product.size],
                               quantity: Number(product.quantity),
                               price: Number(product.price),
                               manufacturer: product.manufacturer || "",
@@ -588,16 +593,17 @@ export default function Products() {
                                 )}
                               />
                               
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-4">
                                 <FormField
                                   control={editForm.control}
                                   name="color"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Color</FormLabel>
+                                      <FormLabel>Colors (comma-separated)</FormLabel>
                                       <FormControl>
-                                        <Input {...field} />
+                                        <Input {...field} placeholder="e.g., red, green, black" />
                                       </FormControl>
+                                      <p className="text-xs text-muted-foreground">Enter multiple colors separated by commas</p>
                                       <FormMessage />
                                     </FormItem>
                                   )}
@@ -606,24 +612,34 @@ export default function Products() {
                                 <FormField
                                   control={editForm.control}
                                   name="size"
-                                  render={({ field }) => (
+                                  render={() => (
                                     <FormItem>
-                                      <FormLabel>Size</FormLabel>
-                                      <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="XS">XS</SelectItem>
-                                          <SelectItem value="S">S</SelectItem>
-                                          <SelectItem value="M">M</SelectItem>
-                                          <SelectItem value="L">L</SelectItem>
-                                          <SelectItem value="XL">XL</SelectItem>
-                                          <SelectItem value="XXL">XXL</SelectItem>
-                                        </SelectContent>
-                                      </Select>
+                                      <FormLabel>Sizes</FormLabel>
+                                      <div className="grid grid-cols-3 gap-2 mt-2">
+                                        {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                                          <FormField
+                                            key={size}
+                                            control={editForm.control}
+                                            name="size"
+                                            render={({ field }) => (
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl>
+                                                  <Checkbox
+                                                    checked={field.value?.includes(size)}
+                                                    onCheckedChange={(checked) => {
+                                                      const newValue = checked
+                                                        ? [...(field.value || []), size]
+                                                        : (field.value || []).filter((val) => val !== size);
+                                                      field.onChange(newValue);
+                                                    }}
+                                                  />
+                                                </FormControl>
+                                                <Label className="text-sm font-normal cursor-pointer">{size}</Label>
+                                              </FormItem>
+                                            )}
+                                          />
+                                        ))}
+                                      </div>
                                       <FormMessage />
                                     </FormItem>
                                   )}

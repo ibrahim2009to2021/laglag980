@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -18,8 +19,8 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 const addProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product name is required"),
-  color: z.string().min(1, "Color is required"),
-  size: z.string().min(1, "Size is required"),
+  color: z.string().min(1, "At least one color is required"),
+  size: z.array(z.string()).min(1, "At least one size is required"),
   quantity: z.number().min(0, "Quantity must be 0 or greater"),
   price: z.number().min(0, "Price must be 0 or greater"),
   manufacturer: z.string().optional(),
@@ -40,7 +41,7 @@ export default function AddProduct() {
       productId: "",
       productName: "",
       color: "",
-      size: "",
+      size: [],
       quantity: 0,
       price: 0,
       manufacturer: "",
@@ -50,7 +51,7 @@ export default function AddProduct() {
   });
 
   const createProductMutation = useMutation({
-    mutationFn: async (data: Omit<AddProductForm, 'price'> & { price: string; imageUrl?: string }) => {
+    mutationFn: async (data: Omit<AddProductForm, 'price' | 'color'> & { price: string; color: string[]; imageUrl?: string }) => {
       const response = await apiRequest("POST", "/api/products", data);
       return response.json();
     },
@@ -161,8 +162,12 @@ export default function AddProduct() {
     }
 
     try {
+      // Convert comma-separated color string to array
+      const colorArray = data.color.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      
       const productData = {
         ...data,
+        color: colorArray,
         price: data.price.toString(), // Convert price to string for decimal field
         quantity: Math.floor(data.quantity), // Ensure quantity is integer
         imageUrl: uploadedImageUrl,
@@ -282,16 +287,17 @@ export default function AddProduct() {
                     <FormItem>
                       <FormLabel className="text-base font-medium flex items-center gap-2">
                         <i className="fas fa-palette text-muted-foreground"></i>
-                        Color
+                        Colors (comma-separated)
                       </FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="e.g., Navy Blue" 
+                          placeholder="e.g., red, green, black" 
                           {...field}
                           data-testid="input-color"
                           className="h-12 text-base"
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">Enter multiple colors separated by commas</p>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -300,27 +306,38 @@ export default function AddProduct() {
                 <FormField
                   control={form.control}
                   name="size"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel className="text-base font-medium flex items-center gap-2">
                         <i className="fas fa-ruler text-muted-foreground"></i>
-                        Size
+                        Sizes
                       </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-size" className="h-12 text-base">
-                            <SelectValue placeholder="Select size" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="XS">XS</SelectItem>
-                          <SelectItem value="S">S</SelectItem>
-                          <SelectItem value="M">M</SelectItem>
-                          <SelectItem value="L">L</SelectItem>
-                          <SelectItem value="XL">XL</SelectItem>
-                          <SelectItem value="XXL">XXL</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="grid grid-cols-3 gap-2 mt-2">
+                        {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                          <FormField
+                            key={size}
+                            control={form.control}
+                            name="size"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(size)}
+                                    onCheckedChange={(checked) => {
+                                      const newValue = checked
+                                        ? [...(field.value || []), size]
+                                        : (field.value || []).filter((val) => val !== size);
+                                      field.onChange(newValue);
+                                    }}
+                                    data-testid={`checkbox-size-${size}`}
+                                  />
+                                </FormControl>
+                                <Label className="text-sm font-normal cursor-pointer">{size}</Label>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
