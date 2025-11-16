@@ -22,7 +22,6 @@ const createInvoiceSchema = z.object({
   customerEmail: z.string().email("Valid email format").optional().or(z.literal("")),
   customerPhone: z.string().min(1, "Phone number is required"),
   customerAddress: z.string().optional(),
-  taxRate: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -58,7 +57,6 @@ export default function CreateInvoice() {
       customerEmail: "",
       customerPhone: "",
       customerAddress: "",
-      taxRate: "8.5",
       notes: "",
     },
   });
@@ -292,14 +290,12 @@ export default function CreateInvoice() {
 
   const calculateTotals = () => {
     const subtotal = invoiceItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    const taxRate = parseFloat(form.watch("taxRate") || "8.5") / 100;
-    const taxAmount = subtotal * taxRate;
-    const total = subtotal + taxAmount;
+    const total = subtotal;
     
-    return { subtotal, taxAmount, total };
+    return { subtotal, total };
   };
 
-  const { subtotal, taxAmount, total } = calculateTotals();
+  const { subtotal, total } = calculateTotals();
 
   const onSubmit = async (data: CreateInvoiceForm) => {
     if (invoiceItems.length === 0) {
@@ -316,8 +312,8 @@ export default function CreateInvoice() {
       subtotal: subtotal.toFixed(2),
       discountPercentage: "0.0000",
       discountAmount: "0.00",
-      taxRate: (parseFloat(data.taxRate || "8.5") / 100).toFixed(4),
-      taxAmount: taxAmount.toFixed(2),
+      taxRate: "0.0000",
+      taxAmount: "0.00",
       total: total.toFixed(2),
     };
 
@@ -648,44 +644,12 @@ export default function CreateInvoice() {
                 {/* Invoice Totals */}
                 {invoiceItems.length > 0 && (
                   <div className="bg-muted rounded-lg p-4 mt-4">
-                    <div className="flex justify-between items-start">
-                      <div className="w-1/2 space-y-4">
-                        {/* Tax Rate Input */}
-                        <FormField
-                          control={form.control}
-                          name="taxRate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Tax Rate (%)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number"
-                                  min="0"
-                                  max="50"
-                                  step="0.1"
-                                  placeholder="8.5" 
-                                  {...field}
-                                  data-testid="input-tax-rate"
-                                  className="w-32"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
+                    <div className="flex justify-end">
                       <div className="w-64 space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Subtotal:</span>
                           <span className="text-foreground font-medium" data-testid="text-subtotal">
                             {formatCurrency(subtotal)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Tax ({form.watch("taxRate") || "8.5"}%):</span>
-                          <span className="text-foreground font-medium" data-testid="text-tax">
-                            {formatCurrency(taxAmount)}
                           </span>
                         </div>
                         <div className="border-t border-border pt-2">
