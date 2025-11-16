@@ -431,13 +431,9 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Can only update discount for pending invoices');
     }
     
-    // Calculate new values based on discount amount
+    // Calculate new values based on discount amount (no tax)
     const subtotal = parseFloat(invoice.subtotal);
-    const taxRate = parseFloat(invoice.taxRate || "0.085");
-    
-    const discountedSubtotal = subtotal - discountAmount;
-    const taxAmount = discountedSubtotal * taxRate;
-    const total = discountedSubtotal + taxAmount;
+    const total = subtotal - discountAmount;
     
     // Calculate percentage for reference (optional, can be removed if not needed)
     const discountPercentage = subtotal > 0 ? (discountAmount / subtotal) : 0;
@@ -447,7 +443,7 @@ export class DatabaseStorage implements IStorage {
       .set({
         discountPercentage: discountPercentage.toFixed(4),
         discountAmount: discountAmount.toFixed(2),
-        taxAmount: taxAmount.toFixed(2),
+        taxAmount: "0.00",
         total: total.toFixed(2),
         updatedAt: new Date()
       })

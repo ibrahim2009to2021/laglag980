@@ -169,8 +169,6 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
     }
     
     yPosition += 15;
-    doc.text(`Tax (${(parseFloat(invoice.taxRate) * 100).toFixed(1)}%): $${parseFloat(invoice.taxAmount).toFixed(2)}`, 400, yPosition);
-    yPosition += 15;
     doc.fontSize(14).text(`Total: $${parseFloat(invoice.total).toFixed(2)}`, 400, yPosition);
     
     if (invoice.notes) {
