@@ -880,6 +880,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/invoices/:id/items", isAuthenticated, async (req: any, res) => {
+    try {
+      // Check that invoice exists and is pending
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() !== 'pending') {
+        return res.status(403).json({ message: "Can only add items to pending invoices" });
+      }
+
+      const { productId, quantity, unitPrice } = req.body;
+      
+      const itemSchema = z.object({
+        productId: z.string(),
+        quantity: z.number().min(1),
+        unitPrice: z.number().min(0)
+      });
+      
+      const validatedItem = itemSchema.parse({ productId, quantity, unitPrice });
+      const totalPrice = validatedItem.unitPrice * validatedItem.quantity;
+      
+      const newItem = await storage.addInvoiceItem(req.params.id, {
+        productId: validatedItem.productId,
+        quantity: validatedItem.quantity,
+        unitPrice: validatedItem.unitPrice.toFixed(2),
+        totalPrice: totalPrice.toFixed(2)
+      });
+      
+      await logActivity(req, `Added item to invoice ${invoice.invoiceNumber}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      
+      res.json(newItem);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid item data", errors: error.errors });
+      }
+      console.error("Error adding invoice item:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to add invoice item" });
+    }
+  });
+
+  app.put("/api/invoices/:invoiceId/items/:itemId", isAuthenticated, async (req: any, res) => {
+    try {
+      // Check that invoice exists and is pending
+      const invoice = await storage.getInvoice(req.params.invoiceId);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() !== 'pending') {
+        return res.status(403).json({ message: "Can only update items in pending invoices" });
+      }
+
+      const { quantity } = req.body;
+      
+      const quantitySchema = z.object({
+        quantity: z.number().min(1)
+      });
+      
+      const { quantity: validatedQuantity } = quantitySchema.parse({ quantity });
+      
+      const updatedItem = await storage.updateInvoiceItemQuantity(req.params.itemId, validatedQuantity);
+      
+      await logActivity(req, `Updated item quantity in invoice ${invoice.invoiceNumber}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      
+      res.json(updatedItem);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid quantity", errors: error.errors });
+      }
+      console.error("Error updating invoice item:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to update invoice item" });
+    }
+  });
+
+  app.delete("/api/invoices/:invoiceId/items/:itemId", isAuthenticated, async (req: any, res) => {
+    try {
+      // Check that invoice exists and is pending
+      const invoice = await storage.getInvoice(req.params.invoiceId);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() !== 'pending') {
+        return res.status(403).json({ message: "Can only delete items from pending invoices" });
+      }
+
+      await storage.deleteInvoiceItem(req.params.itemId);
+      
+      await logActivity(req, `Deleted item from invoice ${invoice.invoiceNumber}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      
+      res.json({ message: "Item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting invoice item:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to delete invoice item" });
+    }
+  });
+
   app.post("/api/invoices/:id/pdf", isAuthenticated, async (req: any, res) => {
     try {
       const invoice = await storage.getInvoiceWithItems(req.params.id);

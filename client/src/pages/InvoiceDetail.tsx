@@ -15,6 +15,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { type Invoice, type InvoiceItem, type Product } from "@shared/schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Discount form schema
 const discountSchema = z.object({
@@ -28,10 +42,17 @@ export default function InvoiceDetail() {
   const { user } = useAuth();
   const { id } = useParams();
   const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
+  const [editingQuantities, setEditingQuantities] = useState<Record<string, number>>({});
 
   const { data: invoice, isLoading, error } = useQuery<Invoice & { items: (InvoiceItem & { product: Product })[] }>({
     queryKey: [`/api/invoices/${id}`],
     enabled: !!id,
+  });
+
+  const { data: productsData } = useQuery<{ products: Product[]; total: number }>({
+    queryKey: ["/api/products", { limit: 1000 }],
+    enabled: isAddingProduct,
   });
 
   const discountForm = useForm<DiscountForm>({
@@ -153,6 +174,103 @@ export default function InvoiceDetail() {
       toast({
         title: "Error",
         description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const addItemMutation = useMutation({
+    mutationFn: async ({ productId, quantity, unitPrice }: { productId: string; quantity: number; unitPrice: number }) => {
+      const response = await apiRequest("POST", `/api/invoices/${id}/items`, { productId, quantity, unitPrice });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product added to invoice",
+      });
+      setIsAddingProduct(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/invoices/${id}`] });
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.response?.message || "Failed to add product",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateItemQuantityMutation = useMutation({
+    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const response = await apiRequest("PUT", `/api/invoices/${id}/items/${itemId}`, { quantity });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Quantity updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/invoices/${id}`] });
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.response?.message || "Failed to update quantity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const response = await apiRequest("DELETE", `/api/invoices/${id}/items/${itemId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Item removed from invoice",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/invoices/${id}`] });
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.response?.message || "Failed to delete item",
         variant: "destructive",
       });
     },
@@ -386,19 +504,35 @@ export default function InvoiceDetail() {
       {/* Invoice Items */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Invoice Items</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Invoice Items</h3>
+            {invoice.status === 'Pending' && canProcessInvoice() && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddingProduct(true)}
+                data-testid="button-add-product"
+              >
+                <i className="fas fa-plus w-4 h-4 mr-2"></i>
+                Add Product
+              </Button>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-border">
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase min-w-[180px]">Product</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Color</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Size</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Colors</th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Sizes</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Manufacturer</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Qty</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Unit Price</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Total</th>
+                  {invoice.status === 'Pending' && canProcessInvoice() && (
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -417,12 +551,12 @@ export default function InvoiceDetail() {
                     </td>
                     <td className="px-3 py-3">
                       <span className="text-sm text-foreground">
-                        {item.product?.color || '-'}
+                        {Array.isArray(item.product?.color) ? item.product.color.join(', ') : (item.product?.color || '-')}
                       </span>
                     </td>
                     <td className="px-3 py-3">
                       <span className="text-sm text-foreground">
-                        {item.product?.size || '-'}
+                        {Array.isArray(item.product?.size) ? item.product.size.join(', ') : (item.product?.size || '-')}
                       </span>
                     </td>
                     <td className="px-3 py-3">
@@ -439,13 +573,58 @@ export default function InvoiceDetail() {
                         <span className="text-sm text-muted-foreground">-</span>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-sm text-foreground font-medium">{item.quantity}</td>
+                    <td className="px-3 py-3">
+                      {invoice.status === 'Pending' && canProcessInvoice() ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            value={editingQuantities[item.id] !== undefined ? editingQuantities[item.id] : item.quantity}
+                            onChange={(e) => {
+                              const newValue = parseInt(e.target.value);
+                              setEditingQuantities(prev => ({ ...prev, [item.id]: newValue }));
+                            }}
+                            onBlur={() => {
+                              const newQuantity = editingQuantities[item.id];
+                              if (newQuantity !== undefined && newQuantity !== item.quantity && newQuantity > 0) {
+                                updateItemQuantityMutation.mutate({ itemId: item.id, quantity: newQuantity });
+                              }
+                              setEditingQuantities(prev => {
+                                const { [item.id]: _, ...rest } = prev;
+                                return rest;
+                              });
+                            }}
+                            className="w-20 h-8 text-sm"
+                            data-testid={`input-quantity-${index}`}
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-sm text-foreground font-medium">{item.quantity}</span>
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-sm text-foreground">{formatCurrency(item.unitPrice)}</td>
                     <td className="px-3 py-3 text-sm font-medium text-foreground">{formatCurrency(item.totalPrice)}</td>
+                    {invoice.status === 'Pending' && canProcessInvoice() && (
+                      <td className="px-3 py-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Are you sure you want to remove this item from the invoice?')) {
+                              deleteItemMutation.mutate(item.id);
+                            }
+                          }}
+                          className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          data-testid={`button-delete-item-${index}`}
+                        >
+                          <i className="fas fa-trash w-3 h-3"></i>
+                        </Button>
+                      </td>
+                    )}
                   </tr>
                 )) || (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={invoice.status === 'Pending' && canProcessInvoice() ? 9 : 8} className="px-4 py-8 text-center text-muted-foreground">
                       No items found
                     </td>
                   </tr>
@@ -552,6 +731,130 @@ export default function InvoiceDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Product Dialog */}
+      <Dialog open={isAddingProduct} onOpenChange={setIsAddingProduct}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Add Product to Invoice</DialogTitle>
+            <DialogDescription>
+              Select a product and specify the quantity to add to this invoice.
+            </DialogDescription>
+          </DialogHeader>
+          <AddProductForm 
+            products={productsData?.products || []}
+            onAdd={(productId, quantity, unitPrice) => {
+              addItemMutation.mutate({ productId, quantity, unitPrice });
+            }}
+            isLoading={addItemMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+// Add Product Form Component
+function AddProductForm({ 
+  products, 
+  onAdd, 
+  isLoading 
+}: { 
+  products: Product[]; 
+  onAdd: (productId: string, quantity: number, unitPrice: number) => void;
+  isLoading: boolean;
+}) {
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
+  const selectedProduct = products.find(p => p.id === selectedProductId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedProduct) {
+      onAdd(selectedProduct.id, quantity, parseFloat(selectedProduct.price));
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="product">Product</Label>
+        <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+          <SelectTrigger id="product" data-testid="select-product">
+            <SelectValue placeholder="Select a product" />
+          </SelectTrigger>
+          <SelectContent>
+            {products.map((product) => (
+              <SelectItem key={product.id} value={product.id}>
+                {product.productName} - {product.productId} (${parseFloat(product.price).toFixed(2)}) - Stock: {product.quantity}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {selectedProduct && (
+        <div className="p-4 bg-muted rounded-lg space-y-2">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span className="text-muted-foreground">Price:</span> 
+              <span className="ml-2 font-medium">${parseFloat(selectedProduct.price).toFixed(2)}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Stock:</span>
+              <span className="ml-2 font-medium">{selectedProduct.quantity}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Colors:</span>
+              <span className="ml-2">{Array.isArray(selectedProduct.color) ? selectedProduct.color.join(', ') : selectedProduct.color}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Sizes:</span>
+              <span className="ml-2">{Array.isArray(selectedProduct.size) ? selectedProduct.size.join(', ') : selectedProduct.size}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="quantity">Quantity</Label>
+        <Input
+          id="quantity"
+          type="number"
+          min="1"
+          max={selectedProduct?.quantity || 1}
+          value={quantity}
+          onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+          data-testid="input-add-quantity"
+        />
+      </div>
+
+      {selectedProduct && (
+        <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
+          <span className="font-medium">Total:</span>
+          <span className="text-lg font-bold">
+            ${(parseFloat(selectedProduct.price) * quantity).toFixed(2)}
+          </span>
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setSelectedProductId("")}
+          disabled={isLoading}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={!selectedProductId || isLoading}
+          data-testid="button-confirm-add-product"
+        >
+          {isLoading ? "Adding..." : "Add to Invoice"}
+        </Button>
+      </div>
+    </form>
   );
 }

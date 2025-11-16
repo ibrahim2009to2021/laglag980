@@ -160,6 +160,67 @@ export default function Products() {
     }).format(typeof price === 'string' ? parseFloat(price) : price);
   };
 
+  const downloadTemplate = () => {
+    try {
+      // Create CSV headers with sample row
+      const headers = [
+        'Product ID',
+        'Product Name', 
+        'Colors (comma-separated)',
+        'Sizes (comma-separated: XS,S,M,L,XL,XXL)',
+        'Quantity',
+        'Price',
+        'Category',
+        'Manufacturer',
+        'Description'
+      ];
+
+      const sampleRow = [
+        'PROD-12345-ABC',
+        'Sample T-Shirt',
+        'red, blue, green',
+        'S, M, L, XL',
+        '100',
+        '29.99',
+        'Clothing',
+        'FashionCo',
+        'High quality cotton t-shirt'
+      ];
+
+      const csvRows = [
+        headers.join(','),
+        sampleRow.map(value => `"${value}"`).join(',')
+      ];
+
+      // Create and download CSV file
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `product_upload_template_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Template Downloaded",
+        description: "You can now fill in the template and upload it to add products in bulk. Note: Product images can be added after uploading.",
+      });
+
+    } catch (error) {
+      console.error('Template download error:', error);
+      toast({
+        title: "Download Failed", 
+        description: "Failed to download template. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const exportToCSV = async () => {
     try {
       // Fetch all products without pagination for export
@@ -345,6 +406,15 @@ export default function Products() {
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
+            onClick={downloadTemplate}
+            data-testid="button-download-template"
+          >
+            <i className="fas fa-file-download mr-2"></i>
+            Download Template
+          </Button>
+          
+          <Button 
+            variant="outline" 
             onClick={exportToCSV}
             data-testid="button-export-csv"
           >
@@ -422,99 +492,6 @@ export default function Products() {
                   ) : (
                     <div className="w-full h-48 bg-muted flex items-center justify-center">
                       <i className="fas fa-image text-muted-foreground text-2xl"></i>
-                    </div>
-                  )}
-                  {product.qrCodeUrl && (
-                    <div className="absolute top-2 right-2">
-                      {/* Click Here Indicator */}
-                      <div className="absolute -top-6 -left-8 z-10">
-                        <img 
-                          src={clickHereImage} 
-                          alt="Click here to view QR code"
-                          className="w-20 h-12 object-contain"
-                        />
-                      </div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="bg-background/80 hover:bg-background transition-all hover:scale-110"
-                            data-testid={`button-qr-${product.id}`}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" className="text-yellow-400">
-                              <path d="M3 11H5V13H3V11M11 5H13V9H11V5M9 11H13V15H9V11M15 3H21V9H15V3M17 5H19V7H17V5M15 15H17V17H15V15M17 17H19V19H17V17M19 19H21V21H19V19M3 3H9V9H3V3M5 5H7V7H5V5M3 15H9V21H3V15M5 17H7V19H5V17Z"/>
-                            </svg>
-                          </Button>
-                        </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>QR Code - {product.productName}</DialogTitle>
-                        </DialogHeader>
-                        <div className="text-center p-6" id={`qr-print-area-${product.id}`}>
-                          <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
-                          <p className="text-lg font-mono font-bold text-foreground mt-3">
-                            {product.productId}
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {product.productName}
-                          </p>
-                        </div>
-                        <div className="flex justify-center pt-4">
-                          <Button 
-                            onClick={() => {
-                              const printWindow = window.open('', '_blank');
-                              const qrContent = document.getElementById(`qr-print-area-${product.id}`)?.innerHTML;
-                              printWindow?.document.write(`
-                                <html>
-                                  <head>
-                                    <title>QR Code - ${product.productName}</title>
-                                    <style>
-                                      body { 
-                                        font-family: Arial, sans-serif; 
-                                        text-align: center; 
-                                        margin: 50px;
-                                        background: white;
-                                      }
-                                      img { 
-                                        max-width: 300px; 
-                                        height: auto; 
-                                      }
-                                      .product-id {
-                                        font-family: 'Courier New', monospace;
-                                        font-size: 20px;
-                                        font-weight: bold;
-                                        margin: 15px 0 5px 0;
-                                        color: #000;
-                                      }
-                                      .product-name {
-                                        font-size: 14px;
-                                        color: #666;
-                                        margin-bottom: 20px;
-                                      }
-                                    </style>
-                                  </head>
-                                  <body>
-                                    <div class="qr-container">
-                                      <img src="${product.qrCodeUrl}" alt="QR Code" />
-                                      <div class="product-id">${product.productId}</div>
-                                      <div class="product-name">${product.productName}</div>
-                                    </div>
-                                  </body>
-                                </html>
-                              `);
-                              printWindow?.document.close();
-                              printWindow?.print();
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                            data-testid={`button-print-qr-${product.id}`}
-                          >
-                            <i className="fas fa-print mr-2"></i>
-                            Print QR Code
-                          </Button>
-                        </div>
-                      </DialogContent>
-                      </Dialog>
                     </div>
                   )}
                 </div>
@@ -764,6 +741,90 @@ export default function Products() {
                         </Form>
                       </DialogContent>
                     </Dialog>
+                    
+                    {/* QR Code Button */}
+                    {product.qrCodeUrl && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid={`button-qr-${product.id}`}
+                          >
+                            <i className="fas fa-qrcode mr-2"></i>
+                            QR Code
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>QR Code - {product.productName}</DialogTitle>
+                          </DialogHeader>
+                          <div className="text-center p-6" id={`qr-print-area-${product.id}`}>
+                            <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
+                            <p className="text-lg font-mono font-bold text-foreground mt-3">
+                              {product.productId}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {product.productName}
+                            </p>
+                          </div>
+                          <div className="flex justify-center pt-4">
+                            <Button 
+                              onClick={() => {
+                                const printWindow = window.open('', '_blank');
+                                const qrContent = document.getElementById(`qr-print-area-${product.id}`)?.innerHTML;
+                                printWindow?.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>QR Code - ${product.productName}</title>
+                                      <style>
+                                        body { 
+                                          font-family: Arial, sans-serif; 
+                                          text-align: center; 
+                                          margin: 50px;
+                                          background: white;
+                                        }
+                                        img { 
+                                          max-width: 300px; 
+                                          height: auto; 
+                                        }
+                                        .product-id {
+                                          font-family: 'Courier New', monospace;
+                                          font-size: 20px;
+                                          font-weight: bold;
+                                          margin: 15px 0 5px 0;
+                                          color: #000;
+                                        }
+                                        .product-name {
+                                          font-size: 14px;
+                                          color: #666;
+                                          margin-bottom: 20px;
+                                        }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <div class="qr-container">
+                                        <img src="${product.qrCodeUrl}" alt="QR Code" />
+                                        <div class="product-id">${product.productId}</div>
+                                        <div class="product-name">${product.productName}</div>
+                                      </div>
+                                    </body>
+                                  </html>
+                                `);
+                                printWindow?.document.close();
+                                printWindow?.print();
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              data-testid={`button-print-qr-${product.id}`}
+                            >
+                              <i className="fas fa-print mr-2"></i>
+                              Print QR Code
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button

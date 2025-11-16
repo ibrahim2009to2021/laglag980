@@ -58,6 +58,10 @@ export interface IStorage {
   getInvoiceItems(invoiceId: string): Promise<(InvoiceItem & { product: Product })[]>;
   getInvoiceWithItems(id: string): Promise<(Invoice & { items: (InvoiceItem & { product: Product })[] }) | undefined>;
   updateInvoiceDiscount(id: string, discountAmount: number): Promise<Invoice>;
+  addInvoiceItem(invoiceId: string, item: InsertInvoiceItem): Promise<InvoiceItem>;
+  updateInvoiceItemQuantity(invoiceItemId: string, quantity: number): Promise<InvoiceItem>;
+  deleteInvoiceItem(invoiceItemId: string): Promise<void>;
+  recalculateInvoiceTotals(invoiceId: string): Promise<Invoice>;
 
   // Activity log operations
   createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
@@ -200,7 +204,8 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(products.category, category));
     }
     if (size) {
-      conditions.push(eq(products.size, size));
+      // Size is now an array, so we need to check if it contains the size
+      conditions.push(sql`${size} = ANY(${products.size})`);
     }
     if (stockLevel === 'low') {
       conditions.push(sql`${products.quantity} <= 5`);
@@ -450,6 +455,114 @@ export class DatabaseStorage implements IStorage {
       .where(eq(invoices.id, id))
       .returning();
     
+    return updatedInvoice;
+  }
+
+  async addInvoiceItem(invoiceId: string, item: InsertInvoiceItem): Promise<InvoiceItem> {
+    // First check that the invoice exists and is pending
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId));
+    if (!invoice) {
+      throw new Error('Invoice not found');
+    }
+    if (invoice.status !== 'Pending') {
+      throw new Error('Can only add items to pending invoices');
+    }
+
+    // Insert the new item
+    const [newItem] = await db
+      .insert(invoiceItems)
+      .values({ ...item, invoiceId })
+      .returning();
+
+    // Recalculate invoice totals
+    await this.recalculateInvoiceTotals(invoiceId);
+
+    return newItem;
+  }
+
+  async updateInvoiceItemQuantity(invoiceItemId: string, quantity: number): Promise<InvoiceItem> {
+    // Get the invoice item
+    const [item] = await db.select().from(invoiceItems).where(eq(invoiceItems.id, invoiceItemId));
+    if (!item) {
+      throw new Error('Invoice item not found');
+    }
+
+    // Check that the invoice is pending
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, item.invoiceId));
+    if (!invoice) {
+      throw new Error('Invoice not found');
+    }
+    if (invoice.status !== 'Pending') {
+      throw new Error('Can only update items in pending invoices');
+    }
+
+    // Update the quantity and total price
+    const unitPrice = parseFloat(item.unitPrice);
+    const totalPrice = (unitPrice * quantity).toFixed(2);
+
+    const [updatedItem] = await db
+      .update(invoiceItems)
+      .set({ 
+        quantity,
+        totalPrice
+      })
+      .where(eq(invoiceItems.id, invoiceItemId))
+      .returning();
+
+    // Recalculate invoice totals
+    await this.recalculateInvoiceTotals(item.invoiceId);
+
+    return updatedItem;
+  }
+
+  async deleteInvoiceItem(invoiceItemId: string): Promise<void> {
+    // Get the invoice item
+    const [item] = await db.select().from(invoiceItems).where(eq(invoiceItems.id, invoiceItemId));
+    if (!item) {
+      throw new Error('Invoice item not found');
+    }
+
+    // Check that the invoice is pending
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, item.invoiceId));
+    if (!invoice) {
+      throw new Error('Invoice not found');
+    }
+    if (invoice.status !== 'Pending') {
+      throw new Error('Can only delete items from pending invoices');
+    }
+
+    // Delete the item
+    await db.delete(invoiceItems).where(eq(invoiceItems.id, invoiceItemId));
+
+    // Recalculate invoice totals
+    await this.recalculateInvoiceTotals(item.invoiceId);
+  }
+
+  async recalculateInvoiceTotals(invoiceId: string): Promise<Invoice> {
+    // Get all invoice items
+    const items = await db.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
+
+    // Calculate subtotal
+    const subtotal = items.reduce((sum, item) => sum + parseFloat(item.totalPrice), 0);
+
+    // Get current invoice to preserve discount
+    const [currentInvoice] = await db.select().from(invoices).where(eq(invoices.id, invoiceId));
+    const discountAmount = parseFloat(currentInvoice?.discountAmount || "0");
+
+    // Calculate total (no tax)
+    const total = subtotal - discountAmount;
+
+    // Update the invoice
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({
+        subtotal: subtotal.toFixed(2),
+        total: total.toFixed(2),
+        updatedAt: new Date()
+      })
+      .where(eq(invoices.id, invoiceId))
+      .returning();
+
     return updatedInvoice;
   }
 
