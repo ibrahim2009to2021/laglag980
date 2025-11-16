@@ -1,0 +1,143 @@
+[33ma674f66[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31mgitsafe-backup/main[m[33m)[m Deployed your application
+[33mc84db02[m Deployed your application
+[33m678957f[m Improve invoice management with discount editing and detailed product attributes
+[33m4467763[m Add route to retrieve product information by product ID
+[33mc0bffcc[m Add ability to read product IDs from images using OCR technology
+[33m6150713[m Add optical character recognition capabilities for barcode text
+[33m4824a96[m Add functionality to search invoices by customer name
+[33mc4deee7[m Add barcode scanning to product selection for invoices
+[33mb41a314[m Add capability to add products to invoices by scanning barcodes
+[33mb29211c[m Add barcode scanning functionality to create invoices for products
+[33m2574b87[m Add ability to search invoices by customer name
+[33m430e3f2[m Add discount editing and view product attributes in invoice management
+[33ma0a7b82[m Update invoice and product management for better business insights
+[33md81fb14[m Display default admin credentials on the login page
+[33meea742b[m Improve invoice editing by allowing discount adjustments
+[33m2756381[m Add password reset functionality for users
+[33mbe84405[m Add functionality to reset user passwords and handle incorrect login attempts
+[33mcdcb730[m Add functionality for users to reset their passwords
+[33m33dacc9[m Adjust layout to properly display logo on all pages
+[33m0dbf205[m Update branding and visual elements across the application
+[33mb77a4b8[m Update invoice display to show editable discounts and product details
+[33m7aac4c1[m Add external icon and file upload styles for enhanced UI functionality
+[33m54260b4[m Update product selection interface to use a search icon
+[33mc1ac42e[m Update header to use a search icon image
+[33mc56d3c4[m Update homepage logo to display correctly
+[33macc65be[m Improve discount update functionality by handling errors and validating input
+[33md71951c[m Update invoice buttons to blue and fix discount update functionality
+[33mff2f271[m Improve discount editing by resetting the form correctly
+[33m727ad8d[m Allow admins to apply percentage discounts to pending invoices
+[33md3ad80b[m Remove discount editing functionality from invoice creation
+[33mec43921[m Update invoice to show discounts only when pending
+[33mc08061a[m Improve product display and filtering for invoice creation
+[33m1857488[m Improve invoice detail view to include product attributes and details
+[33m39ffafc[m Allow users to update invoice discounts and view product manufacturers
+[33m2ba7a09[m Update product image to use a new company logo
+[33m14e3201[m Add manufacturer field to product inventory and display it
+[33m2c4ea8a[m Add confirmation dialog before permanently deleting products
+[33m9d3fbc6[m Add QR code printing functionality to product page
+[33m193bb0e[m Update product page to use image icon for delete action
+[33m3134da9[m Add social media sharing image and meta tags for better website visibility
+[33mdb4d513[m Add a favicon to the application for branding
+[33m52f2071[m Update product deletion to show a loading spinner
+[33m4ceed6d[m Align Instagram logo and account name on the same line
+[33mc18c20c[m Update login page to use company logo and dark theme
+[33mbd1b5d8[m Align login page information to the left for better readability
+[33m712df32[m Update Instagram link to remove trailing slash
+[33m8be1289[m Update Instagram link styling and icon on the login page
+[33med1beab[m Update contact information on the login page with a clickable phone number
+[33m29529ca[m Update login page with accurate company contact information
+[33m5e53b94[m Update login page to display a WhatsApp link for contact
+[33mf51f1b1[m Make the first WhatsApp number a clickable link
+[33mc296155[m Add WhatsApp contact information to the login page
+[33mc550790[m Add Instagram link to the company contact information
+[33m7b0bc93[m Add business contact information to the login page
+[33m9ddef70[m Update login page to display Volume - Fashion brand name
+[33m2500a7a[m Update login page to display contact information instead of demo credentials
+[33mb1e0e73[m Update invoice generation to include discounts and improve footer formatting
+[33m33557da[m Update user identification for product and invoice operations
+[33m56d95a3[m Update password comparison to support bcrypt and scrypt hashing
+[33m7dc11af[m Improve user session handling and error logging during login
+[33m50d35a4[m Add new column to track product stock availability for inventory
+[33ma1ae7b7[m Implement user login and authentication system
+[33m7d6a134[m Add a footer with company information and copyright details
+[33m7a97f05[m Add a logout button to the application header for user sessions
+[33m218e332[m Improve theme toggle buttons for better clarity on the dashboard
+[33me68472e[m Add password hashing utility for secure data storage
+[33mfc334d1[m Add username and password fields to user accounts
+[33ma433e64[m Improve website layout for better viewing on mobile devices
+[33md86ddc2[m Improve website appearance and usability on smaller screens
+[33m81a5395[m Improve layout and responsiveness of filtering and search components
+[33md8281da[m Adapt the application interface for improved mobile device usability
+[33m39a9c2a[m Update color palette for a brighter and cleaner user interface
+[33m76564fa[m Update display of muted colors for better aesthetic consistency
+[33m8bff636[m Add company footer information to all generated invoices
+[33me8d6f1f[m Update the product image upload interface with improved styling
+[33m97c5535[m Update product image upload and display styling
+[33m7af111b[m Adjust product image uploader styling and layout for better usability
+[33m63d7387[m Improve the visual styling of the file upload component
+[33m477cf62[m Make image uploader interactive and visually distinct
+[33meb922cb[m Improve product image upload instructions and visual cues
+[33mc2dad04[m Align product image upload area with the design specifications
+[33m5df37f5[m Adjust dashboard revenue display and update button icon
+[33m196172a[m Fix the issue where the add user button is not functioning
+[33md5620ed[m Add functionality to create new user accounts through the system interface
+[33m30abc83[m Display low stock alerts for products in the inventory
+[33m8a03406[m Update color scheme to improve visual appeal and branding consistency
+[33ma449d9e[m Improve invoice detail display by handling missing data gracefully
+[33mc7fc62e[m Improve inventory quantity update logic and resolve 404 errors
+[33ma87feed[m Improve invoice detail loading and error handling for better data display
+[33me9231fc[m Update invoice status and add logging for improved tracking
+[33md7021c9[m Update inventory quantities when processing invoices
+[33mfb9387c[m Update inventory quantities when processing invoices
+[33m7cbe704[m Add print and save as PDF functionality to invoice details
+[33m6a41c57[m Make invoice entries clickable to view details
+[33m69fe4e4[m Prevent users from over-allocating inventory on invoices
+[33m9070ed5[m Prevent users from adding more items to an invoice than are available in stock
+[33m83433d9[m Add validation to prevent exceeding available stock on invoices
+[33m96aa9b2[m Make delete buttons red and more prominent
+[33m93f4e28[m Add logging to help debug invoice creation issues
+[33mcf0d96c[m Display product names alongside QR codes on detail pages
+[33m1a0e566[m Improve invoice creation and email sending functionality
+[33m13c7477[m Update activity log to record product uploads accurately
+[33m3034f34[m Improve product data validation during bulk uploads
+[33m032dbd2[m Enhance product image upload interface for better user experience
+[33me88ec53[m Update UI design elements and improve layout consistency
+[33m0bbf628[m Enhance dashboard layout for improved data visualization and user experience
+[33mf263012[m Add sample data for product inventory to test system functionality
+[33me066dad[m Add capability to bulk upload product inventory via CSV files
+[33maee4ec1[m Add QR code URL to product export functionality
+[33m4c180fb[m Update QR code display position for better visibility
+[33m6e71cab[m Adjust the positioning of the QR code indicator for products
+[33m43262ff[m Stop QR code indicator from bouncing on the products page
+[33m6863a91[m Enable CSV export functionality for product inventory data
+[33m7ecf7cc[m Add visual indicator to guide users to QR code feature
+[33m087bdfd[m Enhance the visual appeal and user experience of the product addition page
+[33m614573f[m Add discount percentage and tax rate input fields to invoices
+[33m9442ea6[m Make phone number mandatory and email optional for invoices
+[33m0beea18[m Update QR code icon to display a yellow color
+[33m443a2b9[m Update QR code icon to a more visible SVG design
+[33mc97b813[m Add endpoint to serve public assets from object storage
+[33m60e4f58[m Add QR code icon to the application interface
+[33m9dd3a94[m Add unique product ID generation functionality
+[33ma4ea294[m Add button to generate unique product IDs for new entries
+[33m3ed033e[m Add QR code generation and storage for products
+[33mf330010[m Store QR codes as image files in object storage
+[33mf8b6280[m Add a dedicated page to view individual product details
+[33m6921a3e[m Require a product image to be uploaded before saving new products
+[33me4176ff[m Update product category to default to 'none'
+[33m7c2521e[m Enable product image management and barcode generation
+[33m1e2bfd2[m Improve logging for user role and status updates
+[33m6c5ad66[m Add ability to edit product details and fix issues with image handling
+[33mdec3cfc[m Enable QR code generation for all products and improve pagination
+[33m6caa5c7[m Add search functionality to filter inventory items by name or category
+[33m32c8e9b[m Improve product creation form with type and data handling adjustments
+[33m992daf3[m Update user interface to display detailed product information
+[33mdbd6a2d[m Improve data fetching with type safety for dashboard and product pages
+[33m3e2366a[m Enable filtering for invoices and other data retrieval operations
+[33m3f0a5cd[m Update component imports to use path aliases
+[33m2218438[m Update default selection for filtering options across the application
+[33me8820f4[m Add email and PDF generation capabilities to the system
+[33mf2af842[m Improve system performance by optimizing database queries
+[33m5a04b1f[m Implement theme toggling and a search bar in the application header
+[33me3f8c72[m Initial commit
