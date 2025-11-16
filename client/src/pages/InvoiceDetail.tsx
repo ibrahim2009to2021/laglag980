@@ -538,12 +538,6 @@ export default function InvoiceDetail() {
               )
             )}
             
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                Tax ({(parseFloat(invoice.taxRate || "0") * 100).toFixed(1)}%):
-              </span>
-              <span className="font-medium text-foreground">{formatCurrency(invoice.taxAmount || 0)}</span>
-            </div>
             <div className="flex justify-between text-lg font-bold text-foreground border-t border-border pt-3">
               <span>Total:</span>
               <span>{formatCurrency(invoice.total || 0)}</span>
