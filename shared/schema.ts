@@ -79,7 +79,7 @@ export const invoices = pgTable("invoices", {
   customerEmail: varchar("customer_email"),
   customerPhone: varchar("customer_phone").notNull(),
   customerAddress: text("customer_address"),
-  status: varchar("status", { enum: ["Pending", "Processed"] }).default("Pending"),
+  status: varchar("status", { enum: ["Pending", "Processed", "Deleted"] }).default("Pending"),
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   discountPercentage: decimal("discount_percentage", { precision: 5, scale: 4 }).default("0.00"),
   discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).default("0.00"),
