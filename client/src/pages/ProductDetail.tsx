@@ -130,12 +130,12 @@ export default function ProductDetail() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Color</h3>
-                  <p className="text-lg text-foreground">{product.color}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">Colors</h3>
+                  <p className="text-lg text-foreground">{Array.isArray(product.color) ? product.color.join(', ') : product.color}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Size</h3>
-                  <p className="text-lg text-foreground">{product.size}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground">Sizes</h3>
+                  <p className="text-lg text-foreground">{Array.isArray(product.size) ? product.size.join(', ') : product.size}</p>
                 </div>
               </div>
 

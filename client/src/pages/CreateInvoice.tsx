@@ -528,16 +528,11 @@ export default function CreateInvoice() {
                                       <div className="space-y-2">
                                         <div className="flex flex-wrap gap-2">
                                           <Badge variant="outline" className="text-xs" data-testid={`product-size-${product.id}`}>
-                                            Size: {product.size}
+                                            Size: {Array.isArray(product.size) ? product.size.join(', ') : product.size}
                                           </Badge>
                                           {product.color && (
-                                            <Badge variant="outline" className="text-xs flex items-center gap-1" data-testid={`product-color-${product.id}`}>
-                                              <div 
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{ backgroundColor: product.color.toLowerCase() }}
-                                                title={product.color}
-                                              ></div>
-                                              {product.color}
+                                            <Badge variant="outline" className="text-xs" data-testid={`product-color-${product.id}`}>
+                                              {Array.isArray(product.color) ? product.color.join(', ') : product.color}
                                             </Badge>
                                           )}
                                           {product.manufacturer && (
@@ -617,7 +612,7 @@ export default function CreateInvoice() {
                         invoiceItems.map((item, index) => (
                           <tr key={index} data-testid={`invoice-item-${index}`}>
                             <td className="px-4 py-3 text-sm text-foreground">{item.product.productName}</td>
-                            <td className="px-4 py-3 text-sm text-muted-foreground">{item.product.size}</td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">{Array.isArray(item.product.size) ? item.product.size.join(', ') : item.product.size}</td>
                             <td className="px-4 py-3">
                               <Input
                                 type="number"

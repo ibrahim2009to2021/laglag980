@@ -195,8 +195,8 @@ export default function Products() {
         ...data.products.map(product => [
           `"${product.productId}"`,
           `"${product.productName}"`,
-          `"${product.color}"`,
-          `"${product.size}"`,
+          `"${Array.isArray(product.color) ? product.color.join(', ') : product.color}"`,
+          `"${Array.isArray(product.size) ? product.size.join(', ') : product.size}"`,
           product.quantity,
           product.price,
           `"${product.category || ''}"`,
@@ -527,7 +527,7 @@ export default function Products() {
                   
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-lg font-semibold text-foreground">{formatPrice(product.price)}</span>
-                    <span className="text-sm text-muted-foreground">{product.color}</span>
+                    <span className="text-sm text-muted-foreground">{Array.isArray(product.color) ? product.color.join(', ') : product.color}</span>
                   </div>
                   
                   {product.manufacturer && (
@@ -538,7 +538,7 @@ export default function Products() {
                   )}
                   
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-muted-foreground">Size: {product.size}</span>
+                    <span className="text-sm text-muted-foreground">Size: {Array.isArray(product.size) ? product.size.join(', ') : product.size}</span>
                     {getStockBadge(product.quantity)}
                   </div>
                   
