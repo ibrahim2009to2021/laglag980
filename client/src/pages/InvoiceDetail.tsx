@@ -29,6 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Discount form schema
 const discountSchema = z.object({
@@ -276,6 +287,41 @@ export default function InvoiceDetail() {
     },
   });
 
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/invoices/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Invoice marked as deleted",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      // Refresh current invoice to show deleted status
+      queryClient.invalidateQueries({ queryKey: [`/api/invoices/${id}`] });
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.response?.message || "Failed to delete invoice",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmitDiscount = (data: DiscountForm) => {
     console.log("Form submission data:", data);
     console.log("discountAmount type:", typeof data.discountAmount);
@@ -369,11 +415,13 @@ export default function InvoiceDetail() {
   };
 
   const getStatusBadge = (status: string) => {
-    return status === 'Processed' ? (
-      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Processed</Badge>
-    ) : (
-      <Badge variant="secondary">Pending</Badge>
-    );
+    if (status === 'Processed') {
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Processed</Badge>;
+    }
+    if (status === 'Deleted') {
+      return <Badge className="bg-destructive/10 text-destructive">Deleted</Badge>;
+    }
+    return <Badge variant="secondary">Pending</Badge>;
   };
 
   const canProcessInvoice = () => {
@@ -468,6 +516,38 @@ export default function InvoiceDetail() {
               <i className="fas fa-check w-4 h-4 mr-2"></i>
               {updateStatusMutation.isPending ? "Processing..." : "Mark as Processed"}
             </Button>
+          )}
+          {/* Delete button - Admin only */}
+          {user?.role === 'Admin' && invoice.status !== 'Deleted' && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  data-testid="button-delete-invoice"
+                >
+                  <i className="fas fa-trash w-4 h-4 mr-2"></i>
+                  Delete Invoice
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete invoice {invoice.invoiceNumber}? This will mark the invoice as deleted and no further actions can be performed on it. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteInvoiceMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>

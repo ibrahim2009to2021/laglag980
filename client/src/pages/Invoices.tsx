@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -122,6 +123,39 @@ export default function Invoices() {
     },
   });
 
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/invoices/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Invoice marked as deleted",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete invoice",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPage(1);
@@ -141,6 +175,9 @@ export default function Invoices() {
   const getStatusBadge = (status: string) => {
     if (status === 'Processed') {
       return <Badge className="bg-accent/10 text-accent">Processed</Badge>;
+    }
+    if (status === 'Deleted') {
+      return <Badge className="bg-destructive/10 text-destructive">Deleted</Badge>;
     }
     return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>;
   };
@@ -317,7 +354,7 @@ export default function Invoices() {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => downloadPDF(invoice.id, invoice.invoiceNumber)}
+                              onClick={(e) => { e.stopPropagation(); downloadPDF(invoice.id, invoice.invoiceNumber); }}
                               data-testid={`button-download-${invoice.id}`}
                             >
                               <i className="fas fa-download w-4 h-4"></i>
@@ -326,7 +363,7 @@ export default function Invoices() {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => sendEmailMutation.mutate(invoice.id)}
+                              onClick={(e) => { e.stopPropagation(); sendEmailMutation.mutate(invoice.id); }}
                               disabled={sendEmailMutation.isPending}
                               title="Send via Email"
                               data-testid={`button-email-${invoice.id}`}
@@ -337,7 +374,7 @@ export default function Invoices() {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => sendWhatsAppMutation.mutate(invoice.id)}
+                              onClick={(e) => { e.stopPropagation(); sendWhatsAppMutation.mutate(invoice.id); }}
                               disabled={sendWhatsAppMutation.isPending}
                               title="Send via WhatsApp"
                               data-testid={`button-whatsapp-${invoice.id}`}
@@ -349,7 +386,7 @@ export default function Invoices() {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => updateStatusMutation.mutate({ id: invoice.id, status: 'Processed' })}
+                            onClick={(e) => { e.stopPropagation(); updateStatusMutation.mutate({ id: invoice.id, status: 'Processed' }); }}
                             disabled={updateStatusMutation.isPending}
                             title="Mark as Processed"
                             data-testid={`button-process-${invoice.id}`}
@@ -357,6 +394,40 @@ export default function Invoices() {
                             <i className="fas fa-check w-4 h-4"></i>
                           </Button>
                         ) : null}
+                        
+                        {/* Delete button - Admin only */}
+                        {user?.role === 'Admin' && invoice.status !== 'Deleted' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={(e) => e.stopPropagation()}
+                                title="Delete Invoice"
+                                data-testid={`button-delete-${invoice.id}`}
+                              >
+                                <i className="fas fa-trash w-4 h-4 text-destructive"></i>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete invoice {invoice.invoiceNumber}? This will mark the invoice as deleted and no further actions can be performed on it. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={(e) => { e.stopPropagation(); deleteInvoiceMutation.mutate(invoice.id); }}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </td>
                     </tr>
                   ))

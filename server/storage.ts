@@ -302,6 +302,9 @@ export class DatabaseStorage implements IStorage {
     
     const conditions = [];
     
+    // Always exclude deleted invoices from the main list
+    conditions.push(sql`LOWER(${invoices.status}) != 'deleted'`);
+    
     if (status) {
       conditions.push(eq(invoices.status, status as any));
     }

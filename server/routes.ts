@@ -839,24 +839,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
+      // Normalize status for case-insensitive comparisons
+      const normalizedStatus = status?.toLowerCase();
+      
+      // Only allow Pending and Processed statuses through this route
+      // Deleted status can only be set through the DELETE route
+      if (!['pending', 'processed'].includes(normalizedStatus)) {
+        return res.status(400).json({ message: "Invalid status. Only 'Pending' and 'Processed' are allowed" });
+      }
+      
+      // Check if invoice exists and is not deleted
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot modify deleted invoices" });
+      }
+      
       // Only Admin/Manager can process invoices
-      if (status === 'Processed' && !['Admin', 'Manager'].includes(user?.role || '')) {
+      if (normalizedStatus === 'processed' && !['Admin', 'Manager'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Insufficient permissions to process invoices" });
       }
       
-      const invoice = await storage.updateInvoiceStatus(req.params.id, status, userId);
+      // Use the properly capitalized status for storage
+      const capitalizedStatus = normalizedStatus === 'pending' ? 'Pending' : 'Processed';
+      const updatedInvoice = await storage.updateInvoiceStatus(req.params.id, capitalizedStatus, userId);
       
-      await logActivity(req, `Updated invoice ${invoice.invoiceNumber} status to ${status}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      await logActivity(req, `Updated invoice ${updatedInvoice.invoiceNumber} status to ${capitalizedStatus}`, 'Invoices', updatedInvoice.id, updatedInvoice.invoiceNumber);
       
-      res.json(invoice);
+      res.json(updatedInvoice);
     } catch (error) {
       console.error("Error updating invoice status:", error);
       res.status(500).json({ message: "Failed to update invoice status" });
     }
   });
 
+  app.delete("/api/invoices/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      // Only Admin can delete invoices
+      if (!['Admin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Only admins can delete invoices" });
+      }
+      
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      // Check if invoice is already deleted
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(409).json({ message: "Invoice is already deleted" });
+      }
+      
+      // Mark invoice as deleted
+      const deletedInvoice = await storage.updateInvoiceStatus(req.params.id, 'Deleted', userId);
+      
+      await logActivity(req, `Deleted invoice ${invoice.invoiceNumber}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      
+      res.json({ message: "Invoice marked as deleted", invoice: deletedInvoice });
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      res.status(500).json({ message: "Failed to delete invoice" });
+    }
+  });
+
   app.put("/api/invoices/:id/discount", isAuthenticated, async (req: any, res) => {
     try {
+      // Check if invoice exists and is not deleted
+      const invoice = await storage.getInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot modify deleted invoices" });
+      }
+      
       const { discountAmount } = req.body;
       
       // Validate discount amount
@@ -866,11 +927,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { discountAmount: validatedDiscount } = discountSchema.parse({ discountAmount });
       
-      const invoice = await storage.updateInvoiceDiscount(req.params.id, validatedDiscount);
+      const updatedInvoice = await storage.updateInvoiceDiscount(req.params.id, validatedDiscount);
       
-      await logActivity(req, `Updated invoice ${invoice.invoiceNumber} discount to $${validatedDiscount.toFixed(2)}`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      await logActivity(req, `Updated invoice ${updatedInvoice.invoiceNumber} discount to $${validatedDiscount.toFixed(2)}`, 'Invoices', updatedInvoice.id, updatedInvoice.invoiceNumber);
       
-      res.json(invoice);
+      res.json(updatedInvoice);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid discount amount", errors: error.errors });
@@ -882,10 +943,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/invoices/:id/items", isAuthenticated, async (req: any, res) => {
     try {
-      // Check that invoice exists and is pending
+      // Check that invoice exists and is pending (not processed or deleted)
       const invoice = await storage.getInvoice(req.params.id);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot modify deleted invoices" });
       }
       if (invoice.status?.toLowerCase() !== 'pending') {
         return res.status(403).json({ message: "Can only add items to pending invoices" });
@@ -923,10 +987,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/invoices/:invoiceId/items/:itemId", isAuthenticated, async (req: any, res) => {
     try {
-      // Check that invoice exists and is pending
+      // Check that invoice exists and is pending (not processed or deleted)
       const invoice = await storage.getInvoice(req.params.invoiceId);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot modify deleted invoices" });
       }
       if (invoice.status?.toLowerCase() !== 'pending') {
         return res.status(403).json({ message: "Can only update items in pending invoices" });
@@ -956,10 +1023,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/invoices/:invoiceId/items/:itemId", isAuthenticated, async (req: any, res) => {
     try {
-      // Check that invoice exists and is pending
+      // Check that invoice exists and is pending (not processed or deleted)
       const invoice = await storage.getInvoice(req.params.invoiceId);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot modify deleted invoices" });
       }
       if (invoice.status?.toLowerCase() !== 'pending') {
         return res.status(403).json({ message: "Can only delete items from pending invoices" });
@@ -981,6 +1051,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const invoice = await storage.getInvoiceWithItems(req.params.id);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot generate PDF for deleted invoices" });
       }
       
       if (invoice.status !== 'Processed') {
@@ -1007,6 +1081,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const invoice = await storage.getInvoiceWithItems(req.params.id);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot email deleted invoices" });
       }
       
       if (invoice.status !== 'Processed') {
@@ -1056,6 +1134,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const invoice = await storage.getInvoiceWithItems(req.params.id);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      if (invoice.status?.toLowerCase() === 'deleted') {
+        return res.status(403).json({ message: "Cannot send deleted invoices via WhatsApp" });
       }
       
       if (invoice.status !== 'Processed') {
