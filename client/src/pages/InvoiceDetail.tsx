@@ -18,7 +18,7 @@ import { type Invoice, type InvoiceItem, type Product } from "@shared/schema";
 
 // Discount form schema
 const discountSchema = z.object({
-  discountPercentage: z.number().min(0, "Discount cannot be negative").max(100, "Discount cannot exceed 100%")
+  discountAmount: z.number().min(0, "Discount cannot be negative")
 });
 
 type DiscountForm = z.infer<typeof discountSchema>;
@@ -37,19 +37,19 @@ export default function InvoiceDetail() {
   const discountForm = useForm<DiscountForm>({
     resolver: zodResolver(discountSchema),
     defaultValues: {
-      discountPercentage: 0
+      discountAmount: 0
     }
   });
 
   // Reset form when invoice data changes - using useEffect to prevent re-render loops
   useEffect(() => {
     if (invoice && !discountForm.formState.isDirty) {
-      const currentDiscountPercentage = parseFloat(invoice.discountPercentage || "0");
+      const currentDiscountAmount = parseFloat(invoice.discountAmount || "0");
       discountForm.reset({
-        discountPercentage: currentDiscountPercentage
+        discountAmount: currentDiscountAmount
       });
     }
-  }, [invoice?.discountPercentage, discountForm.formState.isDirty]);
+  }, [invoice?.discountAmount, discountForm.formState.isDirty]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
@@ -86,10 +86,10 @@ export default function InvoiceDetail() {
   });
 
   const updateDiscountMutation = useMutation({
-    mutationFn: async (discountPercentage: number) => {
-      console.log("Making API request with discount percentage:", discountPercentage, typeof discountPercentage);
+    mutationFn: async (discountAmount: number) => {
+      console.log("Making API request with discount amount:", discountAmount, typeof discountAmount);
       
-      const requestBody = { discountPercentage };
+      const requestBody = { discountAmount };
       console.log("Request body:", requestBody);
       
       const response = await apiRequest("PUT", `/api/invoices/${id}/discount`, requestBody);
@@ -160,39 +160,39 @@ export default function InvoiceDetail() {
 
   const onSubmitDiscount = (data: DiscountForm) => {
     console.log("Form submission data:", data);
-    console.log("discountPercentage type:", typeof data.discountPercentage);
-    console.log("discountPercentage value:", data.discountPercentage);
+    console.log("discountAmount type:", typeof data.discountAmount);
+    console.log("discountAmount value:", data.discountAmount);
     
     // Ensure it's a number for the API call
-    const numericDiscountPercentage = Number(data.discountPercentage);
-    console.log("Converted to number:", numericDiscountPercentage, typeof numericDiscountPercentage);
+    const numericDiscountAmount = Number(data.discountAmount);
+    console.log("Converted to number:", numericDiscountAmount, typeof numericDiscountAmount);
     
-    if (isNaN(numericDiscountPercentage)) {
+    if (isNaN(numericDiscountAmount)) {
       toast({
         title: "Error",
-        description: "Please enter a valid discount percentage",
+        description: "Please enter a valid discount amount",
         variant: "destructive",
       });
       return;
     }
     
-    if (numericDiscountPercentage < 0 || numericDiscountPercentage > 100) {
+    if (numericDiscountAmount < 0) {
       toast({
         title: "Error",
-        description: "Discount percentage must be between 0 and 100",
+        description: "Discount amount cannot be negative",
         variant: "destructive",
       });
       return;
     }
     
-    updateDiscountMutation.mutate(numericDiscountPercentage);
+    updateDiscountMutation.mutate(numericDiscountAmount);
   };
 
   const cancelDiscountEdit = () => {
     setIsEditingDiscount(false);
     if (invoice) {
       discountForm.reset({
-        discountPercentage: parseFloat(invoice.discountPercentage || "0")
+        discountAmount: parseFloat(invoice.discountAmount || "0")
       });
     }
   };
@@ -483,18 +483,17 @@ export default function InvoiceDetail() {
             {invoice.status === 'Pending' && isEditingDiscount ? (
               <form onSubmit={discountForm.handleSubmit(onSubmitDiscount)} className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Label htmlFor="discount-percentage" className="text-sm text-muted-foreground min-w-fit">
-                    Discount (%):
+                  <Label htmlFor="discount-amount" className="text-sm text-muted-foreground min-w-fit">
+                    Discount Amount:
                   </Label>
                   <Input
-                    id="discount-percentage"
+                    id="discount-amount"
                     type="number"
                     step="0.01"
                     min="0"
-                    max="100"
-                    className="w-20 h-8 text-sm"
-                    {...discountForm.register("discountPercentage", { valueAsNumber: true })}
-                    data-testid="input-discount-percentage"
+                    className="w-24 h-8 text-sm"
+                    {...discountForm.register("discountAmount", { valueAsNumber: true })}
+                    data-testid="input-discount-amount"
                   />
                   <div className="flex space-x-1">
                     <Button
@@ -522,9 +521,9 @@ export default function InvoiceDetail() {
                     </Button>
                   </div>
                 </div>
-                {discountForm.formState.errors.discountPercentage && (
+                {discountForm.formState.errors.discountAmount && (
                   <p className="text-sm text-destructive">
-                    {discountForm.formState.errors.discountPercentage.message}
+                    {discountForm.formState.errors.discountAmount.message}
                   </p>
                 )}
               </form>
@@ -532,7 +531,7 @@ export default function InvoiceDetail() {
               parseFloat(invoice.discountAmount || "0") > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Discount ({(parseFloat(invoice.discountPercentage || "0") * 100).toFixed(1)}%):
+                    Discount:
                   </span>
                   <span className="font-medium text-foreground">-{formatCurrency(invoice.discountAmount || 0)}</span>
                 </div>

@@ -57,7 +57,7 @@ export interface IStorage {
   updateInvoicePdfPath(id: string, pdfPath: string): Promise<Invoice>;
   getInvoiceItems(invoiceId: string): Promise<(InvoiceItem & { product: Product })[]>;
   getInvoiceWithItems(id: string): Promise<(Invoice & { items: (InvoiceItem & { product: Product })[] }) | undefined>;
-  updateInvoiceDiscount(id: string, discountPercentage: number): Promise<Invoice>;
+  updateInvoiceDiscount(id: string, discountAmount: number): Promise<Invoice>;
 
   // Activity log operations
   createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
@@ -417,7 +417,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateInvoiceDiscount(id: string, discountPercentage: number): Promise<Invoice> {
+  async updateInvoiceDiscount(id: string, discountAmount: number): Promise<Invoice> {
     const [invoice] = await db
       .select()
       .from(invoices)
@@ -431,19 +431,21 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Can only update discount for pending invoices');
     }
     
-    // Calculate new values based on discount percentage
+    // Calculate new values based on discount amount
     const subtotal = parseFloat(invoice.subtotal);
     const taxRate = parseFloat(invoice.taxRate || "0.085");
     
-    const discountAmount = subtotal * (discountPercentage / 100);
     const discountedSubtotal = subtotal - discountAmount;
     const taxAmount = discountedSubtotal * taxRate;
     const total = discountedSubtotal + taxAmount;
     
+    // Calculate percentage for reference (optional, can be removed if not needed)
+    const discountPercentage = subtotal > 0 ? (discountAmount / subtotal) : 0;
+    
     const [updatedInvoice] = await db
       .update(invoices)
       .set({
-        discountPercentage: discountPercentage.toString(),
+        discountPercentage: discountPercentage.toFixed(4),
         discountAmount: discountAmount.toFixed(2),
         taxAmount: taxAmount.toFixed(2),
         total: total.toFixed(2),

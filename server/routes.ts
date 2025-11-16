@@ -165,7 +165,7 @@ const generateInvoicePDF = async (invoice: any, items: any[]): Promise<Buffer> =
     // Add discount if present
     if (invoice.discountAmount && parseFloat(invoice.discountAmount) > 0) {
       yPosition += 15;
-      doc.text(`Discount (${(parseFloat(invoice.discountPercentage) * 100).toFixed(1)}%): -$${parseFloat(invoice.discountAmount).toFixed(2)}`, 400, yPosition);
+      doc.text(`Discount: -$${parseFloat(invoice.discountAmount).toFixed(2)}`, 400, yPosition);
     }
     
     yPosition += 15;
@@ -859,23 +859,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/invoices/:id/discount", isAuthenticated, async (req: any, res) => {
     try {
-      const { discountPercentage } = req.body;
+      const { discountAmount } = req.body;
       
-      // Validate discount percentage
+      // Validate discount amount
       const discountSchema = z.object({
-        discountPercentage: z.number().min(0).max(100)
+        discountAmount: z.number().min(0)
       });
       
-      const { discountPercentage: validatedDiscount } = discountSchema.parse({ discountPercentage });
+      const { discountAmount: validatedDiscount } = discountSchema.parse({ discountAmount });
       
       const invoice = await storage.updateInvoiceDiscount(req.params.id, validatedDiscount);
       
-      await logActivity(req, `Updated invoice ${invoice.invoiceNumber} discount to ${validatedDiscount}%`, 'Invoices', invoice.id, invoice.invoiceNumber);
+      await logActivity(req, `Updated invoice ${invoice.invoiceNumber} discount to $${validatedDiscount.toFixed(2)}`, 'Invoices', invoice.id, invoice.invoiceNumber);
       
       res.json(invoice);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid discount percentage", errors: error.errors });
+        return res.status(400).json({ message: "Invalid discount amount", errors: error.errors });
       }
       console.error("Error updating invoice discount:", error);
       res.status(500).json({ message: error instanceof Error ? error.message : "Failed to update invoice discount" });
