@@ -10,6 +10,7 @@ import BulkUpload from "@/pages/BulkUpload";
 import Invoices from "@/pages/Invoices";
 import CreateInvoice from "@/pages/CreateInvoice";
 import InvoiceDetail from "@/pages/InvoiceDetail";
+import Reports from "@/pages/Reports";
 import UserManagement from "@/pages/UserManagement";
 import ActivityLogs from "@/pages/ActivityLogs";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -27,6 +28,7 @@ const pageComponents = {
   invoices: Invoices,
   "invoice-detail": InvoiceDetail,
   "create-invoice": CreateInvoice,
+  reports: Reports,
   users: UserManagement,
   "activity-logs": ActivityLogs,
 };
@@ -40,6 +42,7 @@ const pageTitles = {
   invoices: 'Invoices',
   "invoice-detail": 'Invoice Details',
   "create-invoice": 'Create Invoice',
+  reports: 'Reports',
   users: 'User Management',
   "activity-logs": 'Activity Logs',
 };

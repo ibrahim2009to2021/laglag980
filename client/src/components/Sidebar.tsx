@@ -15,6 +15,7 @@ const navigationItems = [
   { id: "bulk-upload", path: "/bulk-upload", icon: "fas fa-upload", label: "Bulk Upload", roles: ["Admin", "Manager"] },
   { id: "invoices", path: "/invoices", icon: "fas fa-file-invoice", label: "Invoices", roles: ["Admin", "Manager", "Staff", "Viewer"] },
   { id: "create-invoice", path: "/create-invoice", icon: "fas fa-plus-circle", label: "Create Invoice", roles: ["Admin", "Manager", "Staff"] },
+  { id: "reports", path: "/reports", icon: "fas fa-chart-bar", label: "Reports", roles: ["Admin", "Manager", "Viewer"] },
   { id: "users", path: "/users", icon: "fas fa-users", label: "User Management", roles: ["Admin"] },
   { id: "activity-logs", path: "/activity-logs", icon: "fas fa-history", label: "Activity Logs", roles: ["Admin", "Manager"] },
 ];
