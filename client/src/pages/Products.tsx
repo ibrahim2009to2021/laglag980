@@ -67,16 +67,19 @@ export default function Products() {
       // Convert comma-separated color string to array
       const colorArray = data.color.split(',').map(c => c.trim()).filter(c => c.length > 0);
       
+      // Prepare update payload without imageUrl (handled separately)
+      const { imageUrl, id, ...updateData } = data;
+      
       const response = await apiRequest("PUT", `/api/products/${data.id}`, {
-        ...data,
+        ...updateData,
         color: colorArray,
         price: data.price.toString(),
       });
       const product = await response.json();
       
       // If image was uploaded, update the product image
-      if (data.imageUrl) {
-        await apiRequest("PUT", `/api/products/${data.id}/image`, { imageUrl: data.imageUrl });
+      if (imageUrl) {
+        await apiRequest("PUT", `/api/products/${data.id}/image`, { imageUrl });
       }
       
       return product;
