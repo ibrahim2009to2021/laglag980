@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import logoImage from "@assets/Untitled design (3)_1763333299318.png";
+import logoImage from "@assets/Untitled design (5)_1763333606386.png";
 
 interface SidebarProps {
   currentPage: string;
@@ -36,20 +36,16 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
   );
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col h-screen">
+    <aside className="w-64 flex flex-col h-screen border-r border-white/10" style={{ backgroundColor: '#1800ad' }}>
       <div className="p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 flex items-center justify-center">
+            <div className="w-24 h-12 flex items-center justify-center">
               <img 
                 src={logoImage} 
                 alt="Volume Fashion Logo" 
                 className="w-full h-full object-contain"
               />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">Volume Fashion</h1>
-              <p className="text-xs text-muted-foreground">Inventory & Invoicing</p>
             </div>
           </div>
           
@@ -57,7 +53,7 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
           {onClose && (
             <button 
               onClick={onClose}
-              className="lg:hidden text-muted-foreground hover:text-foreground transition-colors p-1"
+              className="lg:hidden text-white/70 hover:text-white transition-colors p-1"
               data-testid="button-close-sidebar"
             >
               <i className="fas fa-times w-5 h-5"></i>
@@ -71,8 +67,10 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
               key={item.id}
               href={item.path}
               className={cn(
-                "w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                currentPage === item.id && "bg-primary text-primary-foreground"
+                "w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                currentPage === item.id 
+                  ? "bg-white text-gray-900" 
+                  : "text-white/90 hover:bg-white/10 hover:text-white"
               )}
               data-testid={`nav-${item.id}`}
             >
@@ -84,20 +82,20 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
       </div>
 
       {/* User Profile Section */}
-      <div className="mt-auto p-6 border-t border-border">
+      <div className="mt-auto p-6 border-t border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-accent-foreground">{userInitials}</span>
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <span className="text-sm font-medium text-gray-900">{userInitials}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-medium text-white truncate">
               {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
             </p>
-            <p className="text-xs text-muted-foreground">{user?.role || 'Viewer'}</p>
+            <p className="text-xs text-white/70">{user?.role || 'Viewer'}</p>
           </div>
           <button 
             onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-white/70 hover:text-white transition-colors"
             data-testid="button-logout"
           >
             <i className="fas fa-sign-out-alt w-4 h-4"></i>
