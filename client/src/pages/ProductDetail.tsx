@@ -98,8 +98,8 @@ export default function ProductDetail() {
                     alt="Product QR Code" 
                     className="w-32 h-32 mx-auto"
                   />
-                  <p className="text-sm font-medium text-foreground mt-2">
-                    {product.productName}
+                  <p className="text-sm font-mono font-bold text-foreground mt-2">
+                    {product.productId}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Scan to view this product

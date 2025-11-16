@@ -448,11 +448,11 @@ export default function Products() {
                         </DialogHeader>
                         <div className="text-center p-6" id={`qr-print-area-${product.id}`}>
                           <img src={product.qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
-                          <p className="text-base font-medium text-foreground mt-4">
-                            {product.productName}
+                          <p className="text-lg font-mono font-bold text-foreground mt-3">
+                            {product.productId}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            Product ID: {product.productId}
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {product.productName}
                           </p>
                         </div>
                         <div className="flex justify-center pt-4">
@@ -475,13 +475,14 @@ export default function Products() {
                                         max-width: 300px; 
                                         height: auto; 
                                       }
-                                      .product-name {
-                                        font-size: 18px;
+                                      .product-id {
+                                        font-family: 'Courier New', monospace;
+                                        font-size: 20px;
                                         font-weight: bold;
-                                        margin: 20px 0 10px 0;
+                                        margin: 15px 0 5px 0;
                                         color: #000;
                                       }
-                                      .product-id {
+                                      .product-name {
                                         font-size: 14px;
                                         color: #666;
                                         margin-bottom: 20px;
@@ -491,8 +492,8 @@ export default function Products() {
                                   <body>
                                     <div class="qr-container">
                                       <img src="${product.qrCodeUrl}" alt="QR Code" />
+                                      <div class="product-id">${product.productId}</div>
                                       <div class="product-name">${product.productName}</div>
-                                      <div class="product-id">Product ID: ${product.productId}</div>
                                     </div>
                                   </body>
                                 </html>
