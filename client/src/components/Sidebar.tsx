@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import logoImage from "@assets/Untitled design (3)_1763333299318.png";
 
 interface SidebarProps {
   currentPage: string;
@@ -39,11 +40,11 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
       <div className="p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 flex items-center justify-center">
               <img 
-                src="/attached_assets/image_1757421254360.png" 
+                src={logoImage} 
                 alt="Volume Fashion Logo" 
-                className="w-8 h-8 rounded-md object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             <div>

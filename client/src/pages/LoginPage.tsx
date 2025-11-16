@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import logoImage from "@assets/Untitled design (3)_1763333299318.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -62,19 +63,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       <div className="w-full max-w-md">
-        <Card className="bg-gray-800 border-gray-700">
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+            <div className="mx-auto mb-4 w-32 h-32 flex items-center justify-center">
               <img 
-                src="/attached_assets/image_1757421254360.png" 
+                src={logoImage} 
                 alt="Volume Fashion Logo" 
-                className="w-16 h-16 rounded-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Volume Fashion Collection</CardTitle>
-            <p className="text-gray-300">Fashion Inventory & Invoicing System</p>
+            <CardTitle className="text-2xl font-bold text-gray-900">Volume Fashion Collection</CardTitle>
+            <p className="text-gray-600">Fashion Inventory & Invoicing System</p>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -84,14 +85,14 @@ export default function LoginPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-200">Username</FormLabel>
+                      <FormLabel className="text-gray-700">Username</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
                           placeholder="Enter your username"
                           disabled={isLoading}
                           data-testid="input-username"
-                          className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
+                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                         />
                       </FormControl>
                       <FormMessage />
@@ -104,7 +105,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-200">Password</FormLabel>
+                      <FormLabel className="text-gray-700">Password</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
@@ -112,7 +113,7 @@ export default function LoginPage() {
                           placeholder="Enter your password"
                           disabled={isLoading}
                           data-testid="input-password"
-                          className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
+                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-blue-500"
                         />
                       </FormControl>
                       <FormMessage />
@@ -152,22 +153,22 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            <div className="mt-6 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg">
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-start gap-3">
-                <i className="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                <i className="fas fa-info-circle text-blue-600 mt-0.5"></i>
                 <div>
-                  <p className="text-sm font-semibold text-blue-300 mb-2">Default Admin Credentials</p>
-                  <div className="text-sm text-gray-200 space-y-1">
-                    <p><span className="text-gray-400">Username:</span> <span className="font-mono text-blue-300">abd.rabo.940@gmail.com</span></p>
-                    <p><span className="text-gray-400">Password:</span> <span className="font-mono text-blue-300">New@2025</span></p>
+                  <p className="text-sm font-semibold text-blue-900 mb-2">Default Admin Credentials</p>
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p><span className="text-gray-600">Username:</span> <span className="font-mono text-blue-700">abd.rabo.940@gmail.com</span></p>
+                    <p><span className="text-gray-600">Password:</span> <span className="font-mono text-blue-700">New@2025</span></p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-gray-700 rounded-lg text-left">
-              <p className="text-sm font-medium text-gray-200 mb-2">Volume Fashion Collection</p>
-              <div className="text-xs text-gray-300 space-y-1">
+            <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg text-left">
+              <p className="text-sm font-medium text-gray-900 mb-2">Volume Fashion Collection</p>
+              <div className="text-xs text-gray-600 space-y-1">
                 <p>Address: 4006-4008Room, 5Floor,changjiang Internation Garment Building ,No.931,Renmingbei Road , Yuexiu District,Guangzhou.China</p>
                 <p>Phone: <a href="tel:+8613288689165" className="text-blue-400 hover:text-blue-300">+86 132 8868 9165</a></p>
                 <p>
