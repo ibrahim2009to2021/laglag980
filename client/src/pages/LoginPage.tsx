@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import logoImage from "@assets/Untitled design (3)_1763333299318.png";
+import logoImage from "@assets/Untitled design (4)_1763333434641.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
