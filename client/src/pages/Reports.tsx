@@ -26,6 +26,13 @@ type InvoicesData = {
   total: number;
 };
 
+type ManufacturerStat = {
+  manufacturer: string;
+  totalQuantitySold: number;
+  totalRevenue: number;
+  productCount: number;
+};
+
 export default function Reports() {
   const [reportType, setReportType] = useState<string>("sales");
   const [dateRange, setDateRange] = useState<string>("month");
@@ -36,6 +43,11 @@ export default function Reports() {
 
   const { data: invoicesData, isLoading: isInvoicesLoading } = useQuery<InvoicesData>({
     queryKey: ["/api/invoices", { limit: 1000 }],
+  });
+
+  const { data: manufacturerStats, isLoading: isManufacturerLoading } = useQuery<ManufacturerStat[]>({
+    queryKey: ["/api/reports/manufacturers"],
+    enabled: reportType === "manufacturers",
   });
 
   const formatCurrency = (amount: number | string) => {
@@ -83,6 +95,16 @@ export default function Reports() {
       csvContent += "Metric,Value\n";
       csvContent += `Total Products,${inventoryReport.totalProducts}\n`;
       csvContent += `Low Stock Items,${inventoryReport.lowStockItems}\n`;
+    } else if (reportType === "manufacturers" && manufacturerStats) {
+      csvContent = "Manufacturer Report\n\n";
+      csvContent += "Manufacturer,Total Quantity Sold,Total Revenue,Product Count\n";
+      manufacturerStats.forEach(stat => {
+        csvContent += `${stat.manufacturer},${stat.totalQuantitySold},${stat.totalRevenue},${stat.productCount}\n`;
+      });
+      csvContent += "\nTotals,";
+      csvContent += `${manufacturerStats.reduce((sum, stat) => sum + stat.totalQuantitySold, 0)},`;
+      csvContent += `${manufacturerStats.reduce((sum, stat) => sum + stat.totalRevenue, 0)},`;
+      csvContent += `${manufacturerStats.reduce((sum, stat) => sum + stat.productCount, 0)}\n`;
     }
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -114,6 +136,7 @@ export default function Reports() {
                 <SelectContent>
                   <SelectItem value="sales">Sales Report</SelectItem>
                   <SelectItem value="inventory">Inventory Report</SelectItem>
+                  <SelectItem value="manufacturers">Manufacturer Report</SelectItem>
                   <SelectItem value="invoices">Invoice Summary</SelectItem>
                 </SelectContent>
               </Select>
@@ -261,6 +284,73 @@ export default function Reports() {
             </>
           )}
         </div>
+      )}
+
+      {/* Manufacturer Report */}
+      {reportType === "manufacturers" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Manufacturer Report</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isManufacturerLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : manufacturerStats && manufacturerStats.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Manufacturer</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Total Quantity Sold</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Total Revenue</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Product Count</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {manufacturerStats.map((stat, index) => (
+                      <tr key={index} className="hover:bg-muted/50">
+                        <td className="px-4 py-3 font-medium">
+                          {stat.manufacturer}
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold">
+                          {stat.totalQuantitySold.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-right text-green-600 font-semibold">
+                          {formatCurrency(stat.totalRevenue)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {stat.productCount}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-muted font-bold">
+                    <tr>
+                      <td className="px-4 py-3">Total</td>
+                      <td className="px-4 py-3 text-right">
+                        {manufacturerStats.reduce((sum, stat) => sum + stat.totalQuantitySold, 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-right text-green-600">
+                        {formatCurrency(manufacturerStats.reduce((sum, stat) => sum + stat.totalRevenue, 0))}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {manufacturerStats.reduce((sum, stat) => sum + stat.productCount, 0)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                No manufacturer data available. Process some invoices to see statistics.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Invoice Summary */}

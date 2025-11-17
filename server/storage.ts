@@ -74,6 +74,14 @@ export interface IStorage {
     pendingInvoices: number;
     monthlyRevenue: number;
   }>;
+
+  // Manufacturer statistics
+  getManufacturerStats(): Promise<{
+    manufacturer: string;
+    totalQuantitySold: number;
+    totalRevenue: number;
+    productCount: number;
+  }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -662,6 +670,34 @@ export class DatabaseStorage implements IStorage {
       pendingInvoices: pendingInvoicesResult[0].count,
       monthlyRevenue: monthlyRevenueResult[0].total || 0
     };
+  }
+
+  async getManufacturerStats(): Promise<{
+    manufacturer: string;
+    totalQuantitySold: number;
+    totalRevenue: number;
+    productCount: number;
+  }[]> {
+    const stats = await db
+      .select({
+        manufacturer: sql<string>`COALESCE(NULLIF(${products.manufacturer}, ''), 'Unknown')`,
+        totalQuantitySold: sql<number>`SUM(${invoiceItems.quantity})`,
+        totalRevenue: sql<number>`SUM(${invoiceItems.totalPrice})`,
+        productCount: sql<number>`COUNT(DISTINCT ${invoiceItems.productId})`,
+      })
+      .from(invoiceItems)
+      .innerJoin(invoices, eq(invoiceItems.invoiceId, invoices.id))
+      .innerJoin(products, eq(invoiceItems.productId, products.id))
+      .where(eq(invoices.status, 'Processed'))
+      .groupBy(sql`COALESCE(NULLIF(${products.manufacturer}, ''), 'Unknown')`)
+      .orderBy(sql`SUM(${invoiceItems.quantity}) DESC`);
+
+    return stats.map(stat => ({
+      manufacturer: stat.manufacturer,
+      totalQuantitySold: Number(stat.totalQuantitySold),
+      totalRevenue: parseFloat(String(stat.totalRevenue)),
+      productCount: Number(stat.productCount),
+    }));
   }
 }
 

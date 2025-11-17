@@ -423,6 +423,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manufacturer statistics
+  app.get("/api/reports/manufacturers", isAuthenticated, async (req, res) => {
+    try {
+      const manufacturerStats = await storage.getManufacturerStats();
+      res.json(manufacturerStats);
+    } catch (error) {
+      console.error("Error fetching manufacturer statistics:", error);
+      res.status(500).json({ message: "Failed to fetch manufacturer statistics" });
+    }
+  });
+
   // Product routes
   app.get("/api/products", isAuthenticated, async (req, res) => {
     try {
