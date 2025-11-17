@@ -36,6 +36,8 @@ type ManufacturerStat = {
 export default function Reports() {
   const [reportType, setReportType] = useState<string>("sales");
   const [dateRange, setDateRange] = useState<string>("month");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<DashboardData>({
     queryKey: ["/api/dashboard/metrics"],
@@ -46,7 +48,11 @@ export default function Reports() {
   });
 
   const { data: manufacturerStats, isLoading: isManufacturerLoading } = useQuery<ManufacturerStat[]>({
-    queryKey: ["/api/reports/manufacturers"],
+    queryKey: ["/api/reports/manufacturers", { 
+      startDate: dateRange === "custom" ? startDate : undefined,
+      endDate: dateRange === "custom" ? endDate : undefined,
+      range: dateRange !== "custom" ? dateRange : undefined
+    }],
     enabled: reportType === "manufacturers",
   });
 
@@ -124,52 +130,84 @@ export default function Reports() {
           <CardTitle>Generate Reports</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Report Type
-              </label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger data-testid="select-report-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sales">Sales Report</SelectItem>
-                  <SelectItem value="inventory">Inventory Report</SelectItem>
-                  <SelectItem value="manufacturers">Manufacturer Report</SelectItem>
-                  <SelectItem value="invoices">Invoice Summary</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Report Type
+                </label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger data-testid="select-report-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sales">Sales Report</SelectItem>
+                    <SelectItem value="inventory">Inventory Report</SelectItem>
+                    <SelectItem value="manufacturers">Manufacturer Report</SelectItem>
+                    <SelectItem value="invoices">Invoice Summary</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Date Range
+                </label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger data-testid="select-date-range">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="week">Last 7 Days</SelectItem>
+                    <SelectItem value="month">Last 30 Days</SelectItem>
+                    <SelectItem value="quarter">Last 3 Months</SelectItem>
+                    <SelectItem value="year">Last Year</SelectItem>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="custom">Custom Duration</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <Button 
+                  onClick={downloadReport}
+                  className="w-full md:w-auto"
+                  data-testid="button-download-report"
+                >
+                  <i className="fas fa-download mr-2"></i>
+                  Download CSV
+                </Button>
+              </div>
             </div>
 
-            <div className="flex-1">
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Date Range
-              </label>
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger data-testid="select-date-range">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">Last 7 Days</SelectItem>
-                  <SelectItem value="month">Last 30 Days</SelectItem>
-                  <SelectItem value="quarter">Last 3 Months</SelectItem>
-                  <SelectItem value="year">Last Year</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button 
-                onClick={downloadReport}
-                className="w-full md:w-auto"
-                data-testid="button-download-report"
-              >
-                <i className="fas fa-download mr-2"></i>
-                Download CSV
-              </Button>
-            </div>
+            {dateRange === "custom" && (
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                    data-testid="input-start-date"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
+                    data-testid="input-end-date"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -305,9 +343,9 @@ export default function Reports() {
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-medium">Manufacturer</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium">Total Quantity Sold</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Products Sold (Qty)</th>
                       <th className="px-4 py-3 text-right text-sm font-medium">Total Revenue</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium">Product Count</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium">Unique Products</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">

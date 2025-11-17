@@ -76,7 +76,11 @@ export interface IStorage {
   }>;
 
   // Manufacturer statistics
-  getManufacturerStats(): Promise<{
+  getManufacturerStats(options?: {
+    startDate?: string;
+    endDate?: string;
+    range?: string;
+  }): Promise<{
     manufacturer: string;
     totalQuantitySold: number;
     totalRevenue: number;
@@ -672,12 +676,44 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getManufacturerStats(): Promise<{
+  async getManufacturerStats(options?: {
+    startDate?: string;
+    endDate?: string;
+    range?: string;
+  }): Promise<{
     manufacturer: string;
     totalQuantitySold: number;
     totalRevenue: number;
     productCount: number;
   }[]> {
+    // Build date filter conditions
+    const conditions = [eq(invoices.status, 'Processed')];
+    
+    if (options?.startDate && options?.endDate) {
+      // Custom date range
+      conditions.push(
+        sql`${invoices.createdAt} >= ${options.startDate}::timestamp`,
+        sql`${invoices.createdAt} <= ${options.endDate}::timestamp + interval '1 day'`
+      );
+    } else if (options?.range) {
+      // Predefined ranges
+      switch (options.range) {
+        case 'week':
+          conditions.push(sql`${invoices.createdAt} >= current_date - interval '7 days'`);
+          break;
+        case 'month':
+          conditions.push(sql`${invoices.createdAt} >= current_date - interval '30 days'`);
+          break;
+        case 'quarter':
+          conditions.push(sql`${invoices.createdAt} >= current_date - interval '3 months'`);
+          break;
+        case 'year':
+          conditions.push(sql`${invoices.createdAt} >= current_date - interval '1 year'`);
+          break;
+        // 'all' - no additional filter
+      }
+    }
+
     const stats = await db
       .select({
         manufacturer: sql<string>`COALESCE(NULLIF(${products.manufacturer}, ''), 'Unknown')`,
@@ -688,7 +724,7 @@ export class DatabaseStorage implements IStorage {
       .from(invoiceItems)
       .innerJoin(invoices, eq(invoiceItems.invoiceId, invoices.id))
       .innerJoin(products, eq(invoiceItems.productId, products.id))
-      .where(eq(invoices.status, 'Processed'))
+      .where(and(...conditions))
       .groupBy(sql`COALESCE(NULLIF(${products.manufacturer}, ''), 'Unknown')`)
       .orderBy(sql`SUM(${invoiceItems.quantity}) DESC`);
 

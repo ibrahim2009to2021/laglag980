@@ -426,7 +426,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manufacturer statistics
   app.get("/api/reports/manufacturers", isAuthenticated, async (req, res) => {
     try {
-      const manufacturerStats = await storage.getManufacturerStats();
+      const { startDate, endDate, range } = req.query;
+      const manufacturerStats = await storage.getManufacturerStats({
+        startDate: startDate as string,
+        endDate: endDate as string,
+        range: range as string
+      });
       res.json(manufacturerStats);
     } catch (error) {
       console.error("Error fetching manufacturer statistics:", error);
