@@ -2,10 +2,13 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import logoImage from "@assets/Untitled design (5)_1763333606386.png";
+import { useState } from "react";
 
 interface SidebarProps {
   currentPage: string;
   onClose?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const navigationItems = [
@@ -20,7 +23,7 @@ const navigationItems = [
   { id: "activity-logs", path: "/activity-logs", icon: "fas fa-history", label: "Activity Logs", roles: ["Admin", "Manager"] },
 ];
 
-export default function Sidebar({ currentPage, onClose }: SidebarProps) {
+export default function Sidebar({ currentPage, onClose, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
@@ -37,24 +40,48 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
   );
 
   return (
-    <aside className="w-64 flex flex-col h-screen border-r border-white/10" style={{ backgroundColor: '#1800ad' }}>
-      <div className="p-6">
+    <aside 
+      className={cn(
+        "flex flex-col h-screen border-r border-sidebar-border gradient-sidebar transition-all duration-300",
+        isCollapsed ? "w-20" : "w-64"
+      )}
+    >
+      <div className={cn("p-6", isCollapsed && "p-4")}>
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="w-24 h-12 flex items-center justify-center">
-              <img 
-                src={logoImage} 
-                alt="Volume Fashion Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
+          <div className={cn("flex items-center", isCollapsed ? "justify-center w-full" : "space-x-3")}>
+            {!isCollapsed && (
+              <div className="w-24 h-12 flex items-center justify-center">
+                <img 
+                  src={logoImage} 
+                  alt="Volume Fashion Logo" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            {isCollapsed && (
+              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">VF</span>
+              </div>
+            )}
           </div>
+          
+          {/* Desktop Collapse Button */}
+          {!onClose && onToggleCollapse && (
+            <button 
+              onClick={onToggleCollapse}
+              className="hidden lg:block text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors p-1"
+              data-testid="button-toggle-sidebar"
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <i className={cn("fas", isCollapsed ? "fa-chevron-right" : "fa-chevron-left", "w-4 h-4")}></i>
+            </button>
+          )}
           
           {/* Mobile Close Button */}
           {onClose && (
             <button 
               onClick={onClose}
-              className="lg:hidden text-white/70 hover:text-white transition-colors p-1"
+              className="lg:hidden text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors p-1"
               data-testid="button-close-sidebar"
             >
               <i className="fas fa-times w-5 h-5"></i>
@@ -68,40 +95,59 @@ export default function Sidebar({ currentPage, onClose }: SidebarProps) {
               key={item.id}
               href={item.path}
               className={cn(
-                "w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                "w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                isCollapsed ? "justify-center" : "space-x-3",
                 currentPage === item.id 
-                  ? "bg-white text-gray-900" 
-                  : "text-white/90 hover:bg-white/10 hover:text-white"
+                  ? "bg-white text-gray-900 shadow-md" 
+                  : "text-sidebar-foreground/90 hover:bg-white/10 hover:text-sidebar-foreground"
               )}
               data-testid={`nav-${item.id}`}
+              title={isCollapsed ? item.label : undefined}
             >
               <i className={`${item.icon} w-4 h-4`}></i>
-              <span>{item.label}</span>
+              {!isCollapsed && <span>{item.label}</span>}
             </Link>
           ))}
         </nav>
       </div>
 
       {/* User Profile Section */}
-      <div className="mt-auto p-6 border-t border-white/10">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-gray-900">{userInitials}</span>
+      <div className={cn("mt-auto p-6 border-t border-sidebar-border", isCollapsed && "p-4")}>
+        {!isCollapsed ? (
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+              <span className="text-sm font-semibold text-gray-900">{userInitials}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
+                {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
+              </p>
+              <p className="text-xs text-sidebar-foreground/70">{user?.role || 'Viewer'}</p>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              data-testid="button-logout"
+              title="Logout"
+            >
+              <i className="fas fa-sign-out-alt w-4 h-4"></i>
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
-              {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
-            </p>
-            <p className="text-xs text-white/70">{user?.role || 'Viewer'}</p>
+        ) : (
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+              <span className="text-sm font-semibold text-gray-900">{userInitials}</span>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              data-testid="button-logout"
+              title="Logout"
+            >
+              <i className="fas fa-sign-out-alt w-4 h-4"></i>
+            </button>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="text-white/70 hover:text-white transition-colors"
-            data-testid="button-logout"
-          >
-            <i className="fas fa-sign-out-alt w-4 h-4"></i>
-          </button>
-        </div>
+        )}
       </div>
     </aside>
   );

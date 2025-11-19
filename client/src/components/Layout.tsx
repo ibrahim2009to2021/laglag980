@@ -2,7 +2,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Dashboard from "@/pages/Dashboard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import AddProduct from "@/pages/AddProduct";
@@ -51,13 +51,31 @@ export default function Layout({ page }: LayoutProps) {
   const PageComponent = pageComponents[page as keyof typeof pageComponents] || Dashboard;
   const pageTitle = pageTitles[page as keyof typeof pageTitles] || 'Dashboard';
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    // Load saved preference from localStorage
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
+  // Save collapse state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', String(isSidebarCollapsed));
+  }, [isSidebarCollapsed]);
+
+  const handleToggleCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex bg-background">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
-          <Sidebar currentPage={page} />
+          <Sidebar 
+            currentPage={page} 
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={handleToggleCollapse}
+          />
         </div>
         
         {/* Mobile Sidebar Overlay */}
